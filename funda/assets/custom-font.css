@@ -1,0 +1,21 @@
+@font-face {
+    font-family: 'EnhancedDotDigital7';
+    src: url('/assets/enhanced_dot_digital-7.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+.dotdigital-title {
+    font-family: 'EnhancedDotDigital7', monospace, sans-serif;
+    color: #39FF14 !important;
+    font-size: 100px !important;
+    letter-spacing: 0.05em;
+    text-shadow: 0 0 16px #39FF14, 0 0 2px #fff;
+    text-transform: uppercase;
+    line-height: 1.1;
+}
+
+.neon-green {
+    color: #39FF14 !important;
+    text-shadow: 0 0 8px #39FF14, 0 0 2px #fff;
+} 
