@@ -22,6 +22,18 @@ import json
 import warnings
 from textblob import TextBlob
 from bs4 import BeautifulSoup
+import sqlalchemy
+
+# Add parent directory to path to import db module
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from db.core import SessionLocal
+from db.models import PerfMetric
+from funda.outlier_engine import STRATEGIES
+from funda.refresh_outliers import start_refresh_thread, get_refresh_status
+import threading
 
 # Suppress All-NaN warnings
 warnings.filterwarnings("ignore", message="All-NaN slice encountered")
@@ -483,6 +495,23 @@ app.layout = dbc.Container([
         dbc.Col(html.P(f"Last Updated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", 
                        className="neon-green text-center mb-4"), width=12)
     ]),
+    # Refresh button row
+    dbc.Row([
+        dbc.Col([
+            dbc.Button(
+                "🔄 Refresh Outlier Data", 
+                id="refresh-button",
+                color="success",
+                className="me-2",
+                disabled=False
+            ),
+            dbc.Spinner(
+                html.Div(id="refresh-status", children="Ready to refresh data"),
+                id="refresh-spinner",
+                color="primary"
+            )
+        ], width=12, className="text-center mb-4")
+    ]),
     dbc.Row([
         dbc.Col([
             html.H4("Custom Ticker Analysis", className="dotdigital-title-small text-left mb-2"),
@@ -659,7 +688,13 @@ app.layout = dbc.Container([
         'background': 'rgba(0,0,0,0.5)',
         'padding': '8px 16px',
         'borderRadius': '12px'
-    })
+    }),
+    # Interval component for progress updates
+    dcc.Interval(
+        id='interval-component',
+        interval=2000,  # Update every 2 seconds
+        n_intervals=0
+    )
 ], fluid=True)
 
 # Callback to update S&P 500 and sector predictions
@@ -675,81 +710,91 @@ app.layout = dbc.Container([
     Input('generate-button', 'n_clicks')
 )
 def update_sp500_dashboard(n_clicks):
-    market_pred_text = html.Div(
-        f"Market Prediction: {market_direction_label} (Confidence: {market_confidence:.2%})",
-        style={'fontFamily': 'EnhancedDotDigital7', 'fontSize': '24px'}
-    )
-    key_drivers = [html.Li(
-        f"{row['Feature']}: {row['Importance']:.2%}",
-        style={'fontFamily': 'EnhancedDotDigital7', 'fontSize': '15px'}
-    ) for _, row in feature_importance_df.iterrows()]
-    sp500_fig = px.line(sp500_df, x='Date', y='SP500', title='S&P 500 (SPY) Historical Data', template='none')
-    sp500_fig.update_layout(
-        plot_bgcolor='black',
-        paper_bgcolor='black', 
-        font_color='#fff',
-        xaxis=dict(color='#fff'),
-        yaxis=dict(color='#fff'),
-        font_family='EnhancedDotDigital7',
-        font_size=24
-    )
-    sector_hist_fig = px.line(sector_historical_melted, x='Date', y='Price', color='Sector', 
-                              title='Sector ETF Historical Data', template='none')
-    sector_hist_fig.update_layout(
-        plot_bgcolor='black',
-        paper_bgcolor='black',
-        font_color='#fff',
-        xaxis=dict(color='#fff'),
-        yaxis=dict(color='#fff')
-    )
-    sector_pred_fig = px.bar(sector_pred_df, x='Predicted_5Day_Return', y='Sector', orientation='h', 
-                             title='Predicted 5-Day Sector Returns', template='none')
-    sector_pred_fig.update_layout(
-        plot_bgcolor='black',
-        paper_bgcolor='black',
-        font_color='#fff',
-        xaxis=dict(color='#fff'),
-        yaxis=dict(color='#fff')
-    )
-    market_direction_text = f"Market Direction: {market_direction_label} (Confidence: {market_confidence:.2%})"
-    explanation = [
-        html.Li(f"Economic Growth: GDP at {data['GDP'].iloc[-1]:.2f}% supports {'bullish' if market_direction_label == 'Bullish' else 'bearish'} markets."),
-        html.Li(f"Unemployment: {data['Unemployment'].iloc[-1]:.2f}% indicates {'strong' if data['Unemployment'].iloc[-1] < 5 else 'weak'} labor markets."),
-        html.Li(f"Inflation: CPI at {data['Inflation'].iloc[-1]/100:.2f}% suggests {'stable' if data['Inflation'].iloc[-1]/100 < 3 else 'high'} price pressures."),
-        html.Li(f"VIX: {data['VIX'].iloc[-1]:.2f}, indicating {'low' if data['VIX'].iloc[-1] < 20 else 'high'} volatility.")
-    ]
-    key_driver_text = f"Key Driver: {feature_importance.iloc[0]['Feature']} ({feature_importance.iloc[0]['Importance']:.2%})"
-    risk_factors_text = f"Risk Factors: Federal Funds Rate at {data['Interest Rate'].iloc[-1]:.2f}% may impact valuations."
-    sector_performance = [html.Li(f"{sector}: {return_pred:.4f}") for sector, return_pred in sector_predictions.items()]
-    investors_insights = [
-        html.Li("Overweight: Sectors with positive returns (e.g., Utilities)."),
-        html.Li("Underweight: Sectors with negative returns (e.g., Consumer Discretionary).")
-    ]
-    traders_insights = [
-        html.Li("Monitor Fed signals—rate hikes above 5% could shift outlook."),
-        html.Li("Consider shorts in underperforming sectors.")
-    ]
-    long_term_view = f"Sustained GDP growth (>3%) could {'extend bullish trend' if market_direction_label == 'Bullish' else 'mitigate bearish pressures'} into Q3 2025."
+    try:
+        # Check if required variables are available
+        if 'market_direction_label' not in globals() or 'market_confidence' not in globals():
+            return html.Div("Loading market data...", style={'color': '#39FF14'}), html.Div("Loading..."), {}, {}, {}, html.Div("Loading news...")
+        
+        market_pred_text = html.Div(
+            f"Market Prediction: {market_direction_label} (Confidence: {market_confidence:.2%})",
+            style={'fontFamily': 'EnhancedDotDigital7', 'fontSize': '24px'}
+        )
+        key_drivers = [html.Li(
+            f"{row['Feature']}: {row['Importance']:.2%}",
+            style={'fontFamily': 'EnhancedDotDigital7', 'fontSize': '15px'}
+        ) for _, row in feature_importance_df.iterrows()]
+        sp500_fig = px.line(sp500_df, x='Date', y='SP500', title='S&P 500 (SPY) Historical Data', template='none')
+        sp500_fig.update_layout(
+            plot_bgcolor='black',
+            paper_bgcolor='black', 
+            font_color='#fff',
+            xaxis=dict(color='#fff'),
+            yaxis=dict(color='#fff'),
+            font_family='EnhancedDotDigital7',
+            font_size=24
+        )
+        sector_hist_fig = px.line(sector_historical_melted, x='Date', y='Price', color='Sector', 
+                                  title='Sector ETF Historical Data', template='none')
+        sector_hist_fig.update_layout(
+            plot_bgcolor='black',
+            paper_bgcolor='black',
+            font_color='#fff',
+            xaxis=dict(color='#fff'),
+            yaxis=dict(color='#fff')
+        )
+        sector_pred_fig = px.bar(sector_pred_df, x='Predicted_5Day_Return', y='Sector', orientation='h', 
+                                 title='Predicted 5-Day Sector Returns', template='none')
+        sector_pred_fig.update_layout(
+            plot_bgcolor='black',
+            paper_bgcolor='black',
+            font_color='#fff',
+            xaxis=dict(color='#fff'),
+            yaxis=dict(color='#fff')
+        )
+        market_direction_text = f"Market Direction: {market_direction_label} (Confidence: {market_confidence:.2%})"
+        explanation = [
+            html.Li(f"Economic Growth: GDP at {data['GDP'].iloc[-1]:.2f}% supports {'bullish' if market_direction_label == 'Bullish' else 'bearish'} markets."),
+            html.Li(f"Unemployment: {data['Unemployment'].iloc[-1]:.2f}% indicates {'strong' if data['Unemployment'].iloc[-1] < 5 else 'weak'} labor markets."),
+            html.Li(f"Inflation: CPI at {data['Inflation'].iloc[-1]/100:.2f}% suggests {'stable' if data['Inflation'].iloc[-1]/100 < 3 else 'high'} price pressures."),
+            html.Li(f"VIX: {data['VIX'].iloc[-1]:.2f}, indicating {'low' if data['VIX'].iloc[-1] < 20 else 'high'} volatility.")
+        ]
+        key_driver_text = f"Key Driver: {feature_importance.iloc[0]['Feature']} ({feature_importance.iloc[0]['Importance']:.2%})"
+        risk_factors_text = f"Risk Factors: Federal Funds Rate at {data['Interest Rate'].iloc[-1]:.2f}% may impact valuations."
+        sector_performance = [html.Li(f"{sector}: {return_pred:.4f}") for sector, return_pred in sector_predictions.items()]
+        investors_insights = [
+            html.Li("Overweight: Sectors with positive returns (e.g., Utilities)."),
+            html.Li("Underweight: Sectors with negative returns (e.g., Consumer Discretionary).")
+        ]
+        traders_insights = [
+            html.Li("Monitor Fed signals—rate hikes above 5% could shift outlook."),
+            html.Li("Consider shorts in underperforming sectors.")
+        ]
+        long_term_view = f"Sustained GDP growth (>3%) could {'extend bullish trend' if market_direction_label == 'Bullish' else 'mitigate bearish pressures'} into Q3 2025."
 
-    # Fetch and classify news
-    articles = fetch_economic_news(NEWS_API_KEY)
-    good, bad, hidden = classify_news(articles)
-    news_children = [
-        html.Div([
-            html.Strong("Good News:", style={'color': '#39FF14'}),
-            html.Ul([html.Li(html.A(a['title'], href=a['url'], target="_blank", style={'color': '#39FF14'})) for a in good])
-        ]),
-        html.Div([
-            html.Strong("Bad News:", style={'color': '#FF4C4C'}),
-            html.Ul([html.Li(html.A(a['title'], href=a['url'], target="_blank", style={'color': '#FF4C4C'})) for a in bad])
-        ]),
-        html.Div([
-            html.Strong("Hidden Edge:", style={'color': '#FFD700'}),
-            html.Ul([html.Li(html.A(a['title'], href=a['url'], target="_blank", style={'color': '#FFD700'})) for a in hidden])
-        ])
-    ]
+        # Fetch and classify news
+        articles = fetch_economic_news(NEWS_API_KEY)
+        good, bad, hidden = classify_news(articles)
+        news_children = [
+            html.Div([
+                html.Strong("Good News:", style={'color': '#39FF14'}),
+                html.Ul([html.Li(html.A(a['title'], href=a['url'], target="_blank", style={'color': '#39FF14'})) for a in good])
+            ]),
+            html.Div([
+                html.Strong("Bad News:", style={'color': '#FF4C4C'}),
+                html.Ul([html.Li(html.A(a['title'], href=a['url'], target="_blank", style={'color': '#FF4C4C'})) for a in bad])
+            ]),
+            html.Div([
+                html.Strong("Hidden Edge:", style={'color': '#FFD700'}),
+                html.Ul([html.Li(html.A(a['title'], href=a['url'], target="_blank", style={'color': '#FFD700'})) for a in hidden])
+            ])
+        ]
 
-    return (market_pred_text, key_drivers, sp500_fig, sector_hist_fig, sector_pred_fig, news_children)
+        return (market_pred_text, key_drivers, sp500_fig, sector_hist_fig, sector_pred_fig, news_children)
+    
+    except Exception as e:
+        logging.error(f"Error in update_sp500_dashboard callback: {e}")
+        error_message = html.Div(f"Error loading dashboard: {str(e)}", style={'color': '#FF4C4C'})
+        return error_message, html.Div("Error loading data"), {}, {}, {}, html.Div("Error loading news")
 
 # Add Grok API call function
 def call_grok_api(prompt, api_key=GROK_API_KEY):
@@ -1107,110 +1152,87 @@ def classify_news(articles):
     Input('strategy-dropdown', 'value')
 )
 def update_feature_outlier_scatter(strategy):
-    # Map strategy to file and column names
-    file_map = {
-        'scalp': 'nasdaq_scalp_performance_metrics.csv',
-        'swing': 'nasdaq_swing_performance_metrics.csv', 
-        'longterm': 'nasdaq_longterm_performance_metrics.csv'
-    }
-    axis_map = {
-        'scalp': ('1m', '1w'),
-        'swing': ('3m', '1m'),
-        'longterm': ('1y', '6m')
-    }
+    if strategy not in STRATEGIES:
+        logging.warning("Invalid strategy %s", strategy)
+        return {"data": [], "layout": {"title": "Invalid strategy", "paper_bgcolor": "#222", "plot_bgcolor": "#222", "font": {"color": "#fff"}}}
 
-    # Get file path and columns based on strategy
-    if strategy not in file_map:
-        logging.warning(f"Invalid strategy '{strategy}' provided, defaulting to 'scalp'")
-        strategy = 'scalp'
-        
-    filename = file_map[strategy]  # Get exact file match for strategy
-    filepath = os.path.join(os.path.dirname(__file__), 'data', filename)
-    x_col, y_col = axis_map[strategy]  # Get exact columns for strategy
+    x_col, y_col, *_ = STRATEGIES[strategy]
 
-    try:
-        # Read CSV file
-        df = pd.read_csv(filepath, index_col=0)
-        
-        # Add ticker column if not present
-        if 'Ticker' in df.columns:
-            df['Ticker'] = df['Ticker']
-        else:
-            df['Ticker'] = df.index
+    # fetch from Postgres
+    with SessionLocal() as sess:
+        rows = sess.query(PerfMetric).filter(PerfMetric.strategy == strategy).all()
 
-        # Validate columns exist
-        if x_col not in df.columns or y_col not in df.columns:
-            return {
-                "data": [],
-                "layout": {
-                    "title": f"Missing columns ({x_col}, {y_col}) in {filename}",
-                    "paper_bgcolor": "#222",
-                    "plot_bgcolor": "#222", 
-                    "font": {"color": "#fff"}
-                }
-            }
+    if not rows:
+        return {"data": [], "layout": {"title": "No data", "paper_bgcolor": "#222", "plot_bgcolor": "#222", "font": {"color": "#fff"}}}
 
-        # Create scatter plot
-        fig = px.scatter(
-            df, 
-            x=x_col,
-            y=y_col,
-            text='Ticker',
-            title=f"Performance Scatter Plot ({strategy.capitalize()}): {x_col} vs {y_col}",
-            template='none'
-        )
+    df = pd.DataFrame([{
+        'symbol': r.symbol,
+        x_col: float(r.metric_x),
+        y_col: float(r.metric_y)
+    } for r in rows])
+    df['Ticker'] = df['symbol']
 
-        # Update plot styling
-        fig.update_traces(
-            marker=dict(
-                size=12,
-                color='#39FF14',
-                line=dict(width=2, color='#fff')
-            ),
-            textposition='top center'
-        )
-
-        fig.update_layout(
-            autosize=False,
-            width=1200,
-            height=700,
-            paper_bgcolor='#222',
-            plot_bgcolor='#222',
-            font_color='#fff',
-            xaxis=dict(
-                color='#fff',
-                title=f"{x_col} Performance",
-                gridcolor='#444'
-            ),
-            yaxis=dict(
-                color='#fff', 
-                title=f"{y_col} Performance",
-                gridcolor='#444'
-            )
-        )
-        fig.update_yaxes(
-            scaleanchor="x",
-            scaleratio=1
-        )
-
-        # Log data for debugging
-        logging.info(f"Successfully loaded {filename} with columns: {df.columns.tolist()}")
-        print(f"First few rows of {filename}:")
-        print(df.head())
-
-        return fig
-
-    except Exception as e:
-        logging.error(f"Error loading {filename}: {str(e)}")
+    # Validate columns exist
+    if x_col not in df.columns or y_col not in df.columns:
         return {
             "data": [],
             "layout": {
-                "title": f"Error loading {filename}: {str(e)}",
+                "title": f"Missing columns ({x_col}, {y_col}) in database",
                 "paper_bgcolor": "#222",
-                "plot_bgcolor": "#222",
+                "plot_bgcolor": "#222", 
                 "font": {"color": "#fff"}
             }
         }
+
+    # Create scatter plot
+    fig = px.scatter(
+        df,
+        x=x_col,
+        y=y_col,
+        text='Ticker',
+        title=f"Performance Scatter Plot ({strategy.capitalize()}): {x_col} vs {y_col}",
+        template='none'
+    )
+
+    # Update plot styling
+    fig.update_traces(
+        marker=dict(
+            size=12,
+            color='#39FF14',
+            line=dict(width=2, color='#fff')
+        ),
+        textposition='top center'
+    )
+
+    fig.update_layout(
+        autosize=False,
+        width=1200,
+        height=700,
+        paper_bgcolor='#222',
+        plot_bgcolor='#222',
+        font_color='#fff',
+        xaxis=dict(
+            color='#fff',
+            title=f"{x_col} Performance",
+            gridcolor='#444'
+        ),
+        yaxis=dict(
+            color='#fff', 
+            title=f"{y_col} Performance",
+            gridcolor='#444'
+        )
+    )
+    fig.update_yaxes(
+        scaleanchor="x",
+        scaleratio=1
+    )
+
+    # Log data for debugging
+    logging.info(f"Successfully loaded data for {strategy} with columns: {df.columns.tolist()}")
+    print(f"First few rows of {strategy} data:")
+    print(df.head())
+
+    return fig
 
 # --- News/NLP/OTCMarkets Analysis Functions ---
 def summarize_news(news_articles):
@@ -1247,6 +1269,48 @@ def check_otc_caveat_emptor(ticker):
         return False
     except Exception as e:
         return f"Error checking OTCMarkets: {e}"
+
+# Outlier detection moved to refresh button - no startup blocking
+
+# Refresh button callbacks
+@app.callback(
+    [Output("refresh-button", "disabled"),
+     Output("refresh-status", "children"),
+     Output("refresh-spinner", "children")],
+    [Input("refresh-button", "n_clicks")],
+    prevent_initial_call=True
+)
+def handle_refresh_click(n_clicks):
+    if n_clicks:
+        success = start_refresh_thread()
+        if success:
+            return True, "Refreshing data... Please wait", None
+        else:
+            return False, "Refresh already in progress", None
+    return False, "Ready to refresh data", None
+
+# Progress update callback
+@app.callback(
+    Output("refresh-status", "children", allow_duplicate=True),
+    Input("interval-component", "n_intervals"),
+    prevent_initial_call=True
+)
+def update_refresh_status(n):
+    status = get_refresh_status()
+    
+    if status['is_running']:
+        progress = status['progress']
+        strategy = status['current_strategy']
+        message = status['message']
+        
+        if status['estimated_completion']:
+            remaining = int(status['estimated_completion'] - datetime.now().timestamp())
+            if remaining > 0:
+                message += f" (Est. {remaining}s remaining)"
+        
+        return f"🔄 {message} - {progress}% complete"
+    else:
+        return status['message']
 
 # Run the app
 if __name__ == '__main__':
