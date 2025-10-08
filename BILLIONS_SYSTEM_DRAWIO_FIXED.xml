@@ -1,0 +1,195 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36" version="28.2.5">
+  <diagram name="Billions ML System" id="billions-system">
+    <mxGraphModel dx="1928" dy="1038" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="1000" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="BILLIONS ML PREDICTION SYSTEM" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=28;fontStyle=1;fontColor=#1A365D;shadow=1;" parent="1" vertex="1">
+          <mxGeometry x="500" y="20" width="400" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="ui-layer" value="USER INTERFACE LAYER" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=35;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;fillColor=#FFF5F5;strokeColor=#E53E3E;strokeWidth=2;shadow=1;" parent="1" vertex="1">
+          <mxGeometry x="50" y="100" width="280" height="95" as="geometry" />
+        </mxCell>
+        <mxCell id="sps" value="&lt;font style=&quot;font-size: 15px; color: light-dark(rgb(0, 0, 0), rgb(135, 255, 85));&quot;&gt;SPS.py&lt;/font&gt;&lt;br&gt;🎯 Main Application&lt;br&gt;Dash Web Interface" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FC8181;strokeColor=#C53030;fontColor=white;fontSize=13;fontStyle=1;shadow=1;" parent="ui-layer" vertex="1">
+          <mxGeometry y="35" width="280" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ml-layer" value="ML CORE LAYER" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=35;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;fillColor=#F0FDF4;strokeColor=#38A169;strokeWidth=2;shadow=1;" parent="1" vertex="1">
+          <mxGeometry x="510" y="220" width="280" height="215" as="geometry" />
+        </mxCell>
+        <mxCell id="train" value="&lt;font style=&quot;color: light-dark(rgb(0, 0, 0), rgb(96, 255, 120)); font-size: 16px;&quot;&gt;train_lstm_model.py&lt;/font&gt;&lt;br&gt;🧠 AI Brain&lt;br&gt;LSTM &amp;amp; CNN-LSTM Training" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#68D391;strokeColor=#38A169;fontColor=white;fontSize=13;fontStyle=1;shadow=1;" parent="ml-layer" vertex="1">
+          <mxGeometry y="35" width="280" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="features" value="&lt;font style=&quot;font-size: 15px; color: light-dark(rgb(0, 0, 0), rgb(77, 255, 90));&quot;&gt;enhanced_features.py&lt;/font&gt;&lt;br&gt;⚡ Intelligence Engine&lt;br&gt;40+ Advanced Features" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#68D391;strokeColor=#38A169;fontColor=white;fontSize=13;fontStyle=1;shadow=1;" parent="ml-layer" vertex="1">
+          <mxGeometry y="95" width="280" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="diagnostics" value="&lt;font style=&quot;color: light-dark(rgb(0, 0, 0), rgb(85, 255, 98)); font-size: 15px;&quot;&gt;model_diagnostics.py&lt;/font&gt;&lt;br&gt;🏥 Health Monitor&lt;br&gt;Performance Analysis" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#68D391;strokeColor=#38A169;fontColor=white;fontSize=13;fontStyle=1;shadow=1;" parent="ml-layer" vertex="1">
+          <mxGeometry y="155" width="280" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="outlier-layer" value="OUTLIER DETECTION LAYER" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=35;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;fillColor=#F7FAFC;strokeColor=#2D3748;strokeWidth=2;shadow=1;" parent="1" vertex="1">
+          <mxGeometry x="510" y="530" width="280" height="195" as="geometry" />
+        </mxCell>
+        <mxCell id="outlier-engine" value="&lt;font style=&quot;font-size: 15px; color: light-dark(rgb(0, 0, 0), rgb(51, 255, 51));&quot;&gt;outlier_engine.py&lt;/font&gt;&lt;br&gt;🔍 Market Scanner&lt;br&gt;Multi-Strategy Analysis" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#A0AEC0;strokeColor=#4A5568;fontColor=white;fontSize=13;fontStyle=1;shadow=1;" parent="outlier-layer" vertex="1">
+          <mxGeometry y="35" width="280" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="longterm" value="&lt;font style=&quot;font-size: 13px; color: light-dark(rgb(0, 0, 0), rgb(51, 255, 51));&quot;&gt;Outlier_Nasdaq_Longterm.py&lt;/font&gt;&lt;br&gt;📈 Long-term Analysis&lt;br&gt;1-year, 10B+ market cap" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#A0AEC0;strokeColor=#4A5568;fontColor=white;fontSize=12;fontStyle=1;shadow=1;" parent="outlier-layer" vertex="1">
+          <mxGeometry y="95" width="280" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="scalp" value="&lt;font style=&quot;font-size: 15px; color: light-dark(rgb(0, 0, 0), rgb(51, 255, 51));&quot;&gt;Outlier_Nasdaq_Scalp.py&lt;/font&gt;&lt;br&gt;⚡ Short-term Analysis&lt;br&gt;1-week, 1B+ market cap" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#A0AEC0;strokeColor=#4A5568;fontColor=white;fontSize=12;fontStyle=1;shadow=1;" parent="outlier-layer" vertex="1">
+          <mxGeometry y="145" width="280" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="support-layer" value="SUPPORT LAYER" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=35;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;fillColor=#FAF5FF;strokeColor=#805AD5;strokeWidth=2;shadow=1;" parent="1" vertex="1">
+          <mxGeometry x="1010" y="100" width="280" height="155" as="geometry" />
+        </mxCell>
+        <mxCell id="refresh" value="&lt;font style=&quot;font-size: 15px; color: light-dark(rgb(0, 0, 0), rgb(51, 255, 51));&quot;&gt;refresh_outliers.py&lt;/font&gt;&lt;br&gt;🔄 Data Updater&lt;br&gt;Background Processing" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#B794F6;strokeColor=#805AD5;fontColor=white;fontSize=13;fontStyle=1;shadow=1;" parent="support-layer" vertex="1">
+          <mxGeometry y="35" width="280" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="fine-tune" value="&lt;font style=&quot;font-size: 15px; color: light-dark(rgb(0, 0, 0), rgb(51, 255, 51));&quot;&gt;fine_tuning_strategy.py&lt;/font&gt;&lt;br&gt;🎯 Optimizer&lt;br&gt;Ticker-specific Tuning" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#B794F6;strokeColor=#805AD5;fontColor=white;fontSize=13;fontStyle=1;shadow=1;" parent="support-layer" vertex="1">
+          <mxGeometry y="95" width="280" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="db-layer" value="DATABASE LAYER" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=35;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;fillColor=#E6FFFA;strokeColor=#319795;strokeWidth=2;shadow=1;" parent="1" vertex="1">
+          <mxGeometry x="50" y="460" width="290" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="db-core" value="&lt;font style=&quot;font-size: 15px; color: light-dark(rgb(0, 0, 0), rgb(71, 255, 99));&quot;&gt;db/core.py&lt;/font&gt;&lt;br&gt;🗄️ DB Configuration&lt;br&gt;SQLite Setup" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#4FD1C7;strokeColor=#319795;fontColor=white;fontSize=13;fontStyle=1;shadow=1;" parent="db-layer" vertex="1">
+          <mxGeometry y="35" width="290" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="db-models" value="&lt;font style=&quot;font-size: 15px; color: light-dark(rgb(0, 0, 0), rgb(74, 255, 101));&quot;&gt;db/models.py&lt;/font&gt;&lt;br&gt;📊 Data Models&lt;br&gt;Table Definitions" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#4FD1C7;strokeColor=#319795;fontColor=white;fontSize=13;fontStyle=1;shadow=1;" parent="db-layer" vertex="1">
+          <mxGeometry y="95" width="290" height="75" as="geometry" />
+        </mxCell>
+        <mxCell id="sps-to-features" value="Feature&#xa;Engineering" style="endArrow=classic;html=1;rounded=0;strokeColor=#E53E3E;strokeWidth=1;fontSize=11;fontStyle=1;fontColor=#E53E3E;dashed=1;" parent="1" source="sps" target="features" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="330" y="160" as="sourcePoint" />
+            <mxPoint x="370" y="180" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="390" y="350" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="sps-to-outlier" value="Outlier&#xa;Detection" style="endArrow=classic;html=1;rounded=0;strokeColor=#E53E3E;strokeWidth=1;fontSize=11;fontStyle=1;fontColor=#E53E3E;dashed=1;" parent="1" source="sps" target="outlier-engine" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="330" y="160" as="sourcePoint" />
+            <mxPoint x="690" y="160" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="300" y="390" />
+              <mxPoint x="440" y="540" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="sps-to-refresh" value="Data&#xa;Refresh" style="endArrow=classic;html=1;rounded=0;strokeColor=#E53E3E;strokeWidth=1;fontSize=11;fontStyle=1;fontColor=#E53E3E;dashed=1;" parent="1" source="sps" target="refresh" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="330" y="160" as="sourcePoint" />
+            <mxPoint x="1010" y="160" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="sps-to-db" value="Database&#xa;Operations" style="endArrow=classic;html=1;rounded=0;strokeColor=#E53E3E;strokeWidth=1;fontSize=11;fontStyle=1;fontColor=#E53E3E;dashed=1;" parent="1" source="sps" target="db-core" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="190" y="220" as="sourcePoint" />
+            <mxPoint x="110" y="380" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="train-to-features" value="Uses" style="endArrow=classic;html=1;rounded=0;strokeColor=#38A169;strokeWidth=2;fontSize=10;fontStyle=1;fontColor=#38A169;" parent="1" source="train" target="features" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="495" y="205" as="sourcePoint" />
+            <mxPoint x="495" y="235" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="features-to-diagnostics" value="Analyzes" style="endArrow=classic;html=1;rounded=0;strokeColor=#38A169;strokeWidth=2;fontSize=10;fontStyle=1;fontColor=#38A169;" parent="1" source="features" target="diagnostics" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="495" y="275" as="sourcePoint" />
+            <mxPoint x="495" y="305" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="features-to-finetune" value="Feature&#xa;Analysis" style="endArrow=classic;html=1;rounded=0;strokeColor=#38A169;strokeWidth=2;fontSize=10;fontStyle=1;fontColor=#38A169;" parent="1" source="features" target="fine-tune" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="620" y="235" as="sourcePoint" />
+            <mxPoint x="1010" y="235" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="920" y="260" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="outlier-to-longterm" value="" style="endArrow=classic;html=1;rounded=0;strokeColor=#4A5568;strokeWidth=2;" parent="1" source="outlier-engine" target="longterm" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="825" y="205" as="sourcePoint" />
+            <mxPoint x="825" y="235" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="outlier-to-scalp" value="" style="endArrow=classic;html=1;rounded=0;strokeColor=#4A5568;strokeWidth=1;exitX=1;exitY=0.75;exitDx=0;exitDy=0;dashed=1;" parent="1" source="outlier-engine" target="scalp" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="825" y="275" as="sourcePoint" />
+            <mxPoint x="825" y="305" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="850" y="670" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="outlier-to-db" value="Stores&#xa;Results" style="endArrow=classic;html=1;rounded=0;strokeColor=#4A5568;strokeWidth=1;fontSize=10;fontStyle=1;fontColor=#4A5568;dashed=1;" parent="1" source="outlier-engine" target="db-models" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="825" y="340" as="sourcePoint" />
+            <mxPoint x="265" y="380" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="refresh-to-outlier" value="Triggers" style="endArrow=classic;html=1;rounded=0;strokeColor=#805AD5;strokeWidth=1;fontSize=10;fontStyle=1;fontColor=#805AD5;dashed=1;" parent="1" source="refresh" target="outlier-engine" edge="1">
+          <mxGeometry x="-0.0227" y="20" width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1010" y="160" as="sourcePoint" />
+            <mxPoint x="970" y="160" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="990" y="520" />
+            </Array>
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="db-core-to-models" value="" style="endArrow=classic;html=1;rounded=0;strokeColor=#319795;strokeWidth=2;" parent="1" source="db-core" target="db-models" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="175" y="425" as="sourcePoint" />
+            <mxPoint x="145" y="425" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="stats" value="SYSTEM STATISTICS" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=35;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;fillColor=#EBF8FF;strokeColor=#3182CE;strokeWidth=2;shadow=1;" parent="1" vertex="1">
+          <mxGeometry x="1020" y="530" width="280" height="185" as="geometry" />
+        </mxCell>
+        <mxCell id="stat1" value="📁 13 Python Files" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontStyle=1;fontColor=#1A365D;" parent="stats" vertex="1">
+          <mxGeometry y="35" width="280" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="stat2" value="🧠 2 Neural Networks" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontStyle=1;fontColor=#1A365D;" parent="stats" vertex="1">
+          <mxGeometry y="60" width="280" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="stat3" value="⚡ 40+ Features" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontStyle=1;fontColor=#1A365D;" parent="stats" vertex="1">
+          <mxGeometry y="85" width="280" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="stat4" value="🔍 3 Outlier Strategies" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontStyle=1;fontColor=#1A365D;" parent="stats" vertex="1">
+          <mxGeometry y="110" width="280" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="stat5" value="📊 30-Day Predictions" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontStyle=1;fontColor=#1A365D;" parent="stats" vertex="1">
+          <mxGeometry y="135" width="280" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="stat6" value="🎯 68.5% Accuracy" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontStyle=1;fontColor=#1A365D;" parent="stats" vertex="1">
+          <mxGeometry y="160" width="280" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="legend" value="COMPONENT TYPES" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=35;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;fillColor=#F7FAFC;strokeColor=#4A5568;strokeWidth=2;shadow=1;" parent="1" vertex="1">
+          <mxGeometry x="1020" y="740" width="280" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="legend1" value="🎯 Main Application" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FC8181;strokeColor=#C53030;fontColor=white;fontSize=11;fontStyle=1;" parent="legend" vertex="1">
+          <mxGeometry y="35" width="280" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="legend2" value="🧠 AI/ML Components" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#68D391;strokeColor=#38A169;fontColor=white;fontSize=11;fontStyle=1;" parent="legend" vertex="1">
+          <mxGeometry y="60" width="280" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="legend3" value="🔍 Outlier Detection" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#A0AEC0;strokeColor=#4A5568;fontColor=white;fontSize=11;fontStyle=1;" parent="legend" vertex="1">
+          <mxGeometry y="85" width="280" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="legend4" value="🔄 Support Utilities" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#B794F6;strokeColor=#805AD5;fontColor=white;fontSize=11;fontStyle=1;" parent="legend" vertex="1">
+          <mxGeometry y="110" width="280" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="legend5" value="🗄️ Database Layer" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#4FD1C7;strokeColor=#319795;fontColor=white;fontSize=11;fontStyle=1;" parent="legend" vertex="1">
+          <mxGeometry y="135" width="280" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="MHoQuj5qt-nxcyjw6CCR-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.25;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1340" y="912.4999999999998" as="sourcePoint" />
+            <mxPoint x="1340" y="924.9999999999998" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

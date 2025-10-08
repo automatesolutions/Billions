@@ -220,11 +220,10 @@ def enhanced_feature_engineering(df: pd.DataFrame) -> Tuple[pd.DataFrame, List[s
     df_enhanced = compute_market_regime_features(df_enhanced)
     df_enhanced = compute_sector_relative_features(df_enhanced)
     
-    # Define core features for model input
+    # Define core features for model input (excluding original OHLC columns to avoid duplicates)
     core_features = [
-        # Price features
-        'Close', 'Volume', 'Price_Change', 'Log_Returns',
-        'High_Low_Ratio', 'Close_to_Open',
+        # Enhanced price features
+        'Price_Change', 'Log_Returns', 'High_Low_Ratio', 'Close_to_Open',
         
         # Volatility features
         'Realized_Vol_20', 'Vol_Regime', 'Vol_Spike', 'Vol_Clustering',
