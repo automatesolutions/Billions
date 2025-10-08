@@ -9,7 +9,6 @@ from torch.utils.data import TensorDataset, DataLoader
 import logging
 import os
 import random
-from backtesting import Backtest, Strategy
 from torch.nn import MultiheadAttention
 from dotenv import load_dotenv
 
@@ -344,18 +343,6 @@ def train_lstm_model(X_order_footprint, X_scalar, y, input_size, output_size, ep
     logging.info(f"Training completed. Best Val Loss: {best_loss:.6f} at epoch {best_epoch}")
     return model
 
-# Backtesting strategy
-class LSTMStrategy(Strategy):
-    def init(self):
-        self.predictions = self.data.Predicted_Close
-        self.i = 0
-    def next(self):
-        if self.i < len(self.predictions) and self.data.Close[-1] < self.predictions[self.i]:
-            self.buy()
-        elif self.i < len(self.predictions):
-            self.sell()
-        self.i += 1
-
 # Evaluate model
 def evaluate_model(model, df_processed, df_original, features, seq_length, pred_horizon, feature_scaler, target_scaler, use_cnn=False, order_footprint=None):
     X_order, X_scalar, y, _, _ = prepare_sequences(df_processed, order_footprint, features, seq_length, pred_horizon)
@@ -374,19 +361,7 @@ def evaluate_model(model, df_processed, df_original, features, seq_length, pred_
     directional_accuracy = np.mean(np.sign(y_actual[:, 1:] - y_actual[:, :-1]) == np.sign(predictions[:, 1:] - predictions[:, :-1]))
     logging.info(f"MAE: {mae:.4f}, RMSE: {rmse:.4f}, Directional Accuracy: {directional_accuracy:.4f}")
     
-    # Backtesting using original DataFrame
-    pred_df = pd.DataFrame({
-        'Date': df_original.index[seq_length:seq_length+len(predictions)],
-        'Open': df_original['Open'].iloc[seq_length:seq_length+len(predictions)],
-        'High': df_original['High'].iloc[seq_length:seq_length+len(predictions)],
-        'Low': df_original['Low'].iloc[seq_length:seq_length+len(predictions)],
-        'Close': df_original['Close'].iloc[seq_length:seq_length+len(predictions)],
-        'Predicted_Close': predictions[:, -1]
-    })
-    bt = Backtest(pred_df, LSTMStrategy, cash=100000, commission=.002)
-    stats = bt.run()
-    logging.info(f"Backtest Sharpe Ratio: {stats['Sharpe Ratio']:.2f}, Return: {stats['Return [%]']:.2f}%")
-    return mae, rmse, directional_accuracy, stats
+    return mae, rmse, directional_accuracy
 
 # Main training function
 def main():
