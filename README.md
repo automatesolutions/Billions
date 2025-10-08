@@ -594,7 +594,7 @@ The developers and contributors are not responsible for any financial losses inc
 
 - **Issues**: [GitHub Issues](https://github.com/yourusername/Billions/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/yourusername/Billions/discussions)
-- **Email**: your.email@example.com
+- **Email**: kumpooniapp@gmail.com
 
 ---
 
