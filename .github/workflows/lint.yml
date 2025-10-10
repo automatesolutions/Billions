@@ -1,0 +1,66 @@
+name: Lint
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+
+jobs:
+  # Backend Linting
+  backend-lint:
+    name: Backend Linting
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r api/requirements-dev.txt
+      
+      - name: Run flake8
+        run: |
+          flake8 api/ --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 api/ --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+      
+      - name: Run black (check)
+        run: |
+          black --check api/
+      
+      - name: Run isort (check)
+        run: |
+          isort --check-only api/
+
+  # Frontend Linting
+  frontend-lint:
+    name: Frontend Linting
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      
+      - name: Install dependencies
+        working-directory: ./web
+        run: pnpm install
+      
+      - name: Run ESLint
+        working-directory: ./web
+        run: pnpm lint
+

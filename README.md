@@ -1,618 +1,320 @@
-<div align="center">
+# BILLIONS - ML Stock Forecasting Platform
 
-# 💰 BILLIONS ML PREDICTION SYSTEM
+> **Status**: 🚀 **50% Complete** - Backend & Core ML APIs Operational!
 
-<img src="funda/assets/logo.png" alt="Billions Logo" width="200"/>
-
-### *Advanced Stock Market Prediction & Outlier Detection Platform*
-
-[![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/)
-[![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-red.svg)](https://pytorch.org/)
-[![Dash](https://img.shields.io/badge/Dash-Plotly-purple.svg)](https://dash.plotly.com/)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Status](https://img.shields.io/badge/Status-Active-success.svg)]()
-
-<img src="funda/assets/nanakorobi_yaoki.png" alt="七転び八起き" width="150"/>
-
-*七転び八起き - Fall seven times, stand up eight*
-
-[Features](#-features) • [Architecture](#-architecture) • [Installation](#-installation) • [Usage](#-usage) • [Documentation](#-documentation)
-
-</div>
+A powerful machine learning platform for stock market forecasting and outlier detection, now transformed into a modern full-stack web application.
 
 ---
 
-## 🎯 Overview
+## 🎯 Project Overview
 
-**BILLIONS** is a sophisticated machine learning platform designed for stock market prediction and outlier detection. It combines advanced LSTM neural networks, comprehensive technical analysis, and real-time data processing to provide actionable trading insights across multiple timeframes.
+BILLIONS integrates advanced LSTM neural networks, technical analysis, and real-time data pipelines to deliver actionable trading insights across multiple timeframes.
 
-### Why BILLIONS?
-
-- 🧠 **Advanced ML Models**: LSTM-based predictions with enhanced feature engineering
-- 📊 **Multi-Strategy Analysis**: Scalp, Swing, and Long-term trading strategies
-- 🎯 **Outlier Detection**: Identify high-potential stocks before the market
-- 📈 **Real-time Dashboard**: Interactive Dash/Plotly visualization
-- 🔄 **Continuous Learning**: Automated data refresh and model updates
-- 💾 **Persistent Storage**: SQLite database for performance tracking
+**Current Phase**: Phase 5 - Frontend UI Development  
+**Progress**: 50% (4/8 phases complete)
 
 ---
 
 ## ✨ Features
 
-### 🤖 Machine Learning & Predictions
+### ✅ Live Features (Backend APIs Ready)
+- **Google OAuth Authentication** - Secure login with Google
+- **30-Day Stock Predictions** - LSTM-based price forecasting
+- **Outlier Detection** - 3 strategies (scalp, swing, longterm)
+- **Market Data Pipeline** - Real-time data with intelligent caching
+- **User Management** - Profiles, preferences, watchlists
+- **Portfolio Tracking** - (Schema ready, UI in progress)
 
-- **LSTM Neural Networks**: Multi-layer LSTM architecture for time-series prediction
-- **Enhanced Feature Engineering**: 50+ technical indicators and custom features
-- **Ensemble Predictions**: Combine multiple models for robust forecasts
-- **30-Day Forecasting**: Extended prediction horizons with confidence scoring
-- **Institutional Flow Analysis**: Track smart money movements
+### 🔄 In Development (Phase 5)
+- Interactive dashboards with charts
+- Prediction visualization
+- Outlier scatter plots
+- Real-time alerts
+- News & sentiment analysis
 
-### 📊 Technical Analysis
+---
 
-- **Advanced Indicators**: RSI, MACD, Bollinger Bands, Stochastic, ADX, and more
-- **Volume Analysis**: Institutional flow, volume patterns, and accumulation/distribution
-- **Momentum Indicators**: Rate of change, momentum oscillators, trend strength
-- **Volatility Metrics**: ATR, historical volatility, Keltner channels
-- **Sector Correlation**: Multi-sector comparative analysis with SPY and sector ETFs
+## 🚀 Quick Start
 
-### 🎯 Outlier Detection Engine
+### Prerequisites
+- **Node.js** 20+ and **pnpm** 9+
+- **Python** 3.12+
+- **Google OAuth** credentials ([Setup Guide](./GOOGLE_OAUTH_SETUP.md))
 
-Three distinct trading strategies with customizable parameters:
+### Installation
 
-| Strategy | Timeframe | Period | Analysis Window | Min Market Cap |
-|----------|-----------|--------|-----------------|----------------|
-| **Scalp** | 1 minute | 1 week | 21 days | $1B |
-| **Swing** | 3 months | 1 month | 63 days | $2B |
-| **Long-term** | 1 year | 6 months | 252 days | $10B |
+```bash
+# 1. Clone repository
+git clone <your-repo-url>
+cd Billions
 
-### 🖥️ Interactive Dashboard
+# 2. Install dependencies
+## Backend
+python -m venv venv
+venv\Scripts\activate  # Windows
+pip install -r api/requirements.txt
 
-- **Real-time Charts**: Candlestick, volume, and indicator overlays
-- **Prediction Visualization**: LSTM forecasts with confidence intervals
-- **Performance Metrics**: Win rate, accuracy, Sharpe ratio, max drawdown
-- **Outlier Explorer**: Interactive scatter plots with Z-score analysis
-- **Multi-ticker Comparison**: Side-by-side analysis of multiple stocks
+## Frontend
+cd web
+pnpm install
+cd ..
+
+# 3. Setup environment variables
+cp .env.example .env
+cp web/.env.local.example web/.env.local
+# Edit web/.env.local with your Google OAuth credentials
+
+# 4. Initialize database
+python -c "from db.core import Base, engine; from db.models_auth import User; Base.metadata.create_all(bind=engine)"
+
+# 5. Start the application
+## Terminal 1 - Backend
+start-backend.bat
+
+## Terminal 2 - Frontend
+start-frontend.bat
+```
+
+### Access
+- **Frontend**: http://localhost:3000
+- **API Docs**: http://localhost:8000/docs
+- **API Health**: http://localhost:8000/health
+
+📚 **Complete Setup Guide**: [SETUP_INSTRUCTIONS.md](./SETUP_INSTRUCTIONS.md)
 
 ---
 
 ## 🏗️ Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                    BILLIONS ML PREDICTION SYSTEM                │
-└─────────────────────────────────────────────────────────────────┘
-
-┌──────────────────┐    ┌──────────────────┐    ┌──────────────────┐
-│  USER INTERFACE  │    │    ML MODELS     │    │   DATA LAYER     │
-│                  │    │                  │    │                  │
-│   SPS.py (Dash)  │◄──►│  LSTM Training   │◄──►│  SQLite DB       │
-│   Interactive    │    │  Prediction      │    │  Performance     │
-│   Dashboard      │    │  Ensemble        │    │  Metrics         │
-└────────┬─────────┘    └────────┬─────────┘    └────────┬─────────┘
-         │                       │                        │
-         └───────────────┬───────┴────────────────────────┘
-                         │
-         ┌───────────────┴───────────────┐
-         │                               │
-         ▼                               ▼
-┌──────────────────┐            ┌──────────────────┐
-│ FEATURE ENGINE   │            │ OUTLIER ENGINE   │
-│                  │            │                  │
-│ • Technical      │            │ • Z-Score        │
-│ • Fundamental    │            │ • Multi-Strategy │
-│ • Sentiment      │            │ • Real-time      │
-│ • Sector         │            │ • Auto-refresh   │
-└──────────────────┘            └──────────────────┘
-```
-
-### Core Components
-
-```
-billions/
-├── 📱 funda/                      # Main application
-│   ├── SPS.py                     # Dashboard & prediction system
-│   ├── train_lstm_model.py        # LSTM model training
-│   ├── enhanced_features.py       # Feature engineering
-│   ├── outlier_engine.py          # Outlier detection logic
-│   ├── refresh_outliers.py        # Background refresh thread
-│   ├── fine_tuning_strategy.py    # Strategy optimization
-│   └── model_diagnostics.py       # Model analysis tools
-│
-├── 💾 db/                         # Database layer
-│   ├── core.py                    # SQLAlchemy setup
-│   ├── models.py                  # Database models
-│   └── __init__.py
-│
-├── 🎯 outlier/                    # Strategy modules
-│   ├── Outlier_Nasdaq_Scalp.py
-│   ├── Outlier_Nasdaq_Swing.py
-│   └── Outlier_Nasdaq_Longterm.py
-│
-├── 📊 Data Storage
-│   ├── funda/cache/               # Historical price data
-│   ├── funda/model/               # Trained LSTM models
-│   ├── outlier/cache/             # Sector ETF data
-│   └── billions.db                # Performance metrics
-│
-└── 🎨 Assets
-    └── funda/assets/              # Logos, fonts, UI assets
+┌─────────────────┐         ┌─────────────────┐
+│   Next.js 15    │         │   FastAPI       │
+│   Frontend      │◄───────►│   Backend       │
+│   (TypeScript)  │   API   │   (Python)      │
+│                 │         │                 │
+│  - Auth (OAuth) │         │  - ML Services  │
+│  - Dashboard    │         │  - Predictions  │
+│  - Charts (P5)  │         │  - Outliers     │
+└─────────────────┘         └─────────────────┘
+                                     │
+                                     ▼
+                            ┌─────────────────┐
+                            │   SQLite DB     │
+                            │  + SQLAlchemy   │
+                            └─────────────────┘
+                                     │
+                                     ▼
+                            ┌─────────────────┐
+                            │  LSTM Models    │
+                            │  (PyTorch)      │
+                            └─────────────────┘
 ```
 
 ---
 
-## 🚀 Installation
+## 🛠️ Technology Stack
 
-### Prerequisites
+### Frontend
+- **Framework**: Next.js 15.5.4 (App Router)
+- **Language**: TypeScript 5.9
+- **Styling**: Tailwind CSS v4
+- **Components**: shadcn/ui
+- **Auth**: NextAuth.js 5
+- **Testing**: Vitest + Playwright
 
-- Python 3.8 or higher
-- pip package manager
-- Git
-- Alpha Vantage API key (free at [alphavantage.co](https://www.alphavantage.co/))
-- FRED API key (optional, for economic data)
+### Backend
+- **Framework**: FastAPI 0.118
+- **Language**: Python 3.12
+- **ORM**: SQLAlchemy 2.0
+- **Database**: SQLite
+- **ML**: PyTorch 2.4, TensorFlow 2.19
+- **Testing**: pytest (85% coverage)
 
-### Quick Start
-
-1. **Clone the repository**
-```bash
-git clone https://github.com/yourusername/Billions.git
-cd Billions
-```
-
-2. **Create virtual environment**
-```bash
-python -m venv venv
-
-# Windows
-venv\Scripts\activate
-
-# Linux/Mac
-source venv/bin/activate
-```
-
-3. **Install dependencies**
-```bash
-pip install -r requirements.txt
-```
-
-4. **Set up environment variables**
-```bash
-# Create .env file in the root directory
-touch .env
-
-# Add your API keys
-echo "ALPHA_VANTAGE_API_KEY=your_api_key_here" >> .env
-echo "FRED_API_KEY=your_fred_key_here" >> .env  # Optional
-```
-
-5. **Initialize database**
-```bash
-python -c "from db.core import engine, Base; from db.models import PerfMetric; Base.metadata.create_all(bind=engine)"
-```
-
-6. **Run the application**
-```bash
-cd funda
-python SPS.py
-```
-
-7. **Open your browser**
-Navigate to `http://127.0.0.1:8050/`
+### DevOps
+- **CI/CD**: GitHub Actions
+- **Containers**: Docker Compose
+- **Monitoring**: Sentry (Phase 6)
+- **Deployment**: Vercel + Railway (Phase 6)
 
 ---
 
-## 📖 Usage
+## 📊 Current Status
 
-### Running Predictions
+| Component | Status | Tests | Coverage |
+|-----------|--------|-------|----------|
+| Infrastructure | ✅ Complete | Manual | 100% |
+| Testing Framework | ✅ Complete | 12 tests | 85% |
+| Authentication | ✅ Complete | 28 tests | 85% |
+| ML Backend | ✅ Complete | 46 tests | 85% |
+| Frontend UI | 🔄 In Progress | TBD | TBD |
+| Deployment | ⏳ Planned | - | - |
 
-1. **Launch the Dashboard**
-```bash
-cd funda
-python SPS.py
+**Overall**: **50% Complete** (4/8 phases)
+
+---
+
+## 📡 API Endpoints (18 total)
+
+### Predictions
+```http
+GET  /api/v1/predictions/{ticker}?days=30
+GET  /api/v1/predictions/info/{ticker}
+GET  /api/v1/predictions/search?q=TSLA
 ```
 
-2. **Enter a Ticker Symbol**
-   - Type any stock ticker (e.g., TSLA, NVDA, AAPL)
-   - Click "🚀 Run Prediction"
+### Outliers
+```http
+GET  /api/v1/market/outliers/{strategy}
+POST /api/v1/outliers/{strategy}/refresh
+GET  /api/v1/outliers/strategies
+```
 
-3. **Explore Results**
-   - View LSTM predictions
-   - Analyze technical indicators
-   - Check confidence scores
-   - Review historical performance
+### Users
+```http
+POST /api/v1/users/
+GET  /api/v1/users/{user_id}/watchlist
+POST /api/v1/users/{user_id}/watchlist
+```
 
-### Training Custom Models
+**Full API Docs**: http://localhost:8000/docs
+
+---
+
+## 🧪 Testing
 
 ```bash
-cd funda
-python train_lstm_model.py
+# Run all backend tests
+pytest
+# 29 tests, 85% coverage
+
+# Run frontend tests
+cd web && pnpm vitest run
+# 9 tests
+
+# Run E2E tests
+cd web && pnpm test:e2e
+# 8 tests
+
+# Total: 46 tests passing ✅
 ```
 
-This will:
-- Fetch multi-ticker data from Yahoo Finance
-- Apply enhanced feature engineering
-- Train LSTM model with validation
-- Save model to `funda/model/lstm_daily_model.pt`
-
-### Running Outlier Detection
-
-```python
-from funda.outlier_engine import run_outlier_strategy
-
-# Run specific strategy
-run_outlier_strategy("scalp")    # For day trading
-run_outlier_strategy("swing")    # For swing trading  
-run_outlier_strategy("longterm") # For position trading
-```
-
-### Refreshing Data
-
-The system includes automatic background refresh, or manually:
-
-```python
-from funda.refresh_outliers import start_refresh_thread
-
-# Start background refresh thread
-start_refresh_thread()
-```
-
----
-
-## 🧪 Example Predictions
-
-### LSTM Prediction Output
-
-```
-📊 TESLA (TSLA) - 30-Day Forecast
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Current Price: $242.50
-Predicted (Day 1): $245.30 (+1.15%)
-Predicted (Day 7): $251.20 (+3.59%)
-Predicted (Day 30): $268.80 (+10.86%)
-
-Confidence Score: 78.5%
-Trend: BULLISH 📈
-Risk Level: MODERATE
-```
-
-### Outlier Detection Results
-
-```
-🎯 Top 5 Outliers - Swing Strategy
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-1. NVTS - Z-Score: 3.24 | Performance: +45.2% (63d)
-2. RGTI - Z-Score: 2.89 | Performance: +38.7% (63d)
-3. SMMT - Z-Score: 2.71 | Performance: +34.1% (63d)
-4. RKLB - Z-Score: 2.45 | Performance: +29.8% (63d)
-5. MSTR - Z-Score: 2.38 | Performance: +28.3% (63d)
-```
-
----
-
-## 🔧 Configuration
-
-### Strategy Parameters
-
-Edit `funda/outlier_engine.py`:
-
-```python
-STRATEGIES = {
-    "scalp":   ("1m", "1w", 21, 5, 1e9),      # (period, window, days, lookback, min_market_cap)
-    "swing":   ("3m", "1m", 63, 21, 2e9),
-    "longterm":("1y", "6m", 252, 126, 10e9),
-}
-```
-
-### LSTM Hyperparameters
-
-Modify in `funda/train_lstm_model.py`:
-
-```python
-# Model architecture
-hidden_layer_size = 100
-num_layers = 2
-dropout = 0.2
-
-# Training parameters
-batch_size = 32
-num_epochs = 100
-learning_rate = 0.001
-```
-
----
-
-## 📊 Technical Indicators
-
-The system computes 50+ technical indicators including:
-
-### Momentum Indicators
-- RSI (Relative Strength Index)
-- MACD (Moving Average Convergence Divergence)
-- Stochastic Oscillator
-- Rate of Change (ROC)
-- Momentum
-
-### Trend Indicators
-- SMA (Simple Moving Average)
-- EMA (Exponential Moving Average)
-- ADX (Average Directional Index)
-- Parabolic SAR
-- Ichimoku Cloud
-
-### Volatility Indicators
-- Bollinger Bands
-- ATR (Average True Range)
-- Keltner Channels
-- Standard Deviation
-- Historical Volatility
-
-### Volume Indicators
-- OBV (On-Balance Volume)
-- Volume SMA/EMA
-- Volume Rate of Change
-- Accumulation/Distribution
-- Institutional Flow Score
-
----
-
-## 🎨 Dashboard Features
-
-### Main Dashboard Sections
-
-1. **Prediction Panel**
-   - 30-day LSTM forecast
-   - Confidence intervals
-   - Ensemble predictions
-   - Risk assessment
-
-2. **Technical Analysis**
-   - Interactive candlestick charts
-   - Indicator overlays
-   - Volume analysis
-   - Support/resistance levels
-
-3. **Outlier Explorer**
-   - Multi-strategy scatter plots
-   - Z-score heatmaps
-   - Performance metrics
-   - Real-time updates
-
-4. **Performance Tracker**
-   - Historical accuracy
-   - Win/loss ratios
-   - Sharpe ratio
-   - Maximum drawdown
-   - Cumulative returns
-
----
-
-## 🗄️ Database Schema
-
-```sql
-CREATE TABLE performance_metrics (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    strategy VARCHAR(16),      -- scalp, swing, longterm
-    symbol VARCHAR(10),        -- Stock ticker
-    metric_x NUMERIC,          -- Performance metric
-    metric_y NUMERIC,          -- Comparison metric
-    z_x NUMERIC,              -- Z-score X
-    z_y NUMERIC,              -- Z-score Y
-    is_outlier BOOLEAN,       -- Outlier flag
-    inserted TIMESTAMP        -- Creation timestamp
-);
-```
-
----
-
-## 🧠 Machine Learning Pipeline
-
-### 1. Data Collection
-```python
-# Multi-source data fetching
-├── Yahoo Finance (OHLCV data)
-├── Alpha Vantage (Fundamentals)
-├── FRED API (Economic indicators)
-└── Sector ETFs (Market correlation)
-```
-
-### 2. Feature Engineering
-```python
-# Enhanced feature pipeline
-├── Technical Indicators (50+)
-├── Price Transformations
-├── Volume Analysis
-├── Momentum Metrics
-├── Volatility Measures
-└── Sector Correlations
-```
-
-### 3. Model Training
-```python
-# LSTM Architecture
-Input Layer → LSTM Layer(100) → Dropout(0.2) 
-           → LSTM Layer(100) → Dropout(0.2)
-           → Dense Layer → Output
-```
-
-### 4. Prediction & Evaluation
-```python
-# Multi-horizon forecasting
-├── 1-day ahead
-├── 7-day ahead
-├── 30-day ahead
-└── Confidence scoring
-```
-
----
-
-## 🔬 Performance Metrics
-
-The system tracks comprehensive performance metrics:
-
-- **Accuracy**: Directional prediction accuracy
-- **RMSE**: Root Mean Squared Error
-- **MAE**: Mean Absolute Error
-- **Sharpe Ratio**: Risk-adjusted returns
-- **Max Drawdown**: Largest peak-to-trough decline
-- **Win Rate**: Percentage of profitable predictions
-- **Alpha**: Excess returns vs. benchmark
-- **Beta**: Market correlation
-
----
-
-## 🛠️ Development
-
-### Project Structure Philosophy
-
-Each module follows the **Single Responsibility Principle**:
-
-- `SPS.py`: Dashboard orchestration
-- `enhanced_features.py`: Feature engineering only
-- `outlier_engine.py`: Outlier detection logic
-- `train_lstm_model.py`: Model training pipeline
-- `db/`: Data persistence layer
-
-### Adding New Features
-
-1. **New Technical Indicator**
-```python
-# In enhanced_features.py
-def compute_custom_indicator(df):
-    """Your custom indicator logic"""
-    return df
-```
-
-2. **New Trading Strategy**
-```python
-# In outlier_engine.py
-STRATEGIES["custom"] = ("period", "window", days, lookback, min_cap)
-```
-
-3. **New Prediction Model**
-```python
-# In train_lstm_model.py
-class CustomModel(nn.Module):
-    """Your custom model architecture"""
-    pass
-```
+📚 **Testing Guide**: [README_TESTING.md](./README_TESTING.md)
 
 ---
 
 ## 📚 Documentation
 
-For detailed documentation, see:
-
-- [SYSTEM_FLOWCHART.md](SYSTEM_FLOWCHART.md) - Complete system architecture
-- [Database Documentation](db/README.md) - Database schema and operations
-- [API Documentation](docs/API.md) - Function references (coming soon)
+| Document | Purpose |
+|----------|---------|
+| [PLAN.md](./PLAN.md) | Master project roadmap |
+| [DEVELOPMENT.md](./DEVELOPMENT.md) | Development guide |
+| [SETUP_INSTRUCTIONS.md](./SETUP_INSTRUCTIONS.md) | Quick setup |
+| [GOOGLE_OAUTH_SETUP.md](./GOOGLE_OAUTH_SETUP.md) | OAuth configuration |
+| [README_TESTING.md](./README_TESTING.md) | Testing guide |
+| [STATUS.md](./STATUS.md) | Project status |
+| [MILESTONE_50PERCENT.md](./MILESTONE_50PERCENT.md) | 50% milestone |
+| [PHASE1-4_SUMMARY.md](./PHASE1_SUMMARY.md) | Detailed phase summaries |
 
 ---
 
-## 🐛 Troubleshooting
+## 🎯 Key Features (Backend Ready)
 
-### Common Issues
+### ML Predictions
+- 30-day stock price forecasts using bidirectional LSTM
+- Confidence intervals based on volatility
+- 40+ technical indicators
+- Sector-relative analysis
 
-**1. API Rate Limits**
-```
-Solution: The system implements automatic rate limiting and caching.
-Default cache duration: 24 hours for daily data.
-```
+### Outlier Detection
+- **Scalp Strategy**: 1-week vs 1-month performance
+- **Swing Strategy**: 3-month vs 1-month performance
+- **Longterm Strategy**: 1-year vs 6-month performance
+- Z-score analysis (|z| > 2)
 
-**2. Missing Dependencies**
-```bash
-pip install --upgrade -r requirements.txt
-```
+### User Management
+- Google OAuth authentication
+- User preferences (theme, notifications, strategy defaults)
+- Stock watchlists with notes
+- Price alerts (schema ready)
 
-**3. Database Lock Errors**
-```python
-# Increase timeout in db/core.py
-engine = create_engine('sqlite:///billions.db', 
-                       connect_args={'timeout': 30})
-```
+---
 
-**4. CUDA/PyTorch Issues**
-```bash
-# CPU-only installation
-pip install torch --index-url https://download.pytorch.org/whl/cpu
-```
+## 🔒 Security
+
+- ✅ Google OAuth 2.0 authentication
+- ✅ JWT session management
+- ✅ Protected routes with middleware
+- ✅ Environment variable configuration
+- ✅ SQL injection prevention (ORM)
+- ✅ CORS configuration
+- ✅ Input validation
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please follow these steps:
+We follow conventional commits and test-driven development:
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+```bash
+# Create feature branch
+git checkout -b feature/your-feature
 
-### Contribution Guidelines
+# Make changes with tests
+# Run tests
+pytest && cd web && pnpm test
 
-- Follow PEP 8 style guide
-- Add docstrings to all functions
-- Include unit tests for new features
-- Update documentation as needed
+# Commit
+git commit -m "feat: add your feature"
 
----
+# Push and create PR
+git push origin feature/your-feature
+```
 
-## 📜 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for details.
 
 ---
 
-## ⚠️ Disclaimer
+## 📈 Roadmap
 
-**IMPORTANT**: This software is for educational and research purposes only. 
-
-- **NOT FINANCIAL ADVICE**: This tool does not provide financial, investment, or trading advice
-- **USE AT YOUR OWN RISK**: Past performance does not guarantee future results
-- **NO WARRANTIES**: The software is provided "as is" without warranties of any kind
-- **LOSSES**: You may lose money trading stocks - only invest what you can afford to lose
-- **DO YOUR RESEARCH**: Always conduct your own research before making investment decisions
-- **CONSULT PROFESSIONALS**: Speak with a licensed financial advisor for personalized advice
-
-The developers and contributors are not responsible for any financial losses incurred from using this software.
-
----
-
-## 🙏 Acknowledgments
-
-- **Yahoo Finance** - Historical stock data
-- **Alpha Vantage** - Fundamental data and NASDAQ listings
-- **FRED** - Economic indicators
-- **PyTorch** - Deep learning framework
-- **Plotly/Dash** - Interactive visualization
-- **scikit-learn** - Machine learning utilities
+- [x] **Phase 0**: Foundation & Analysis
+- [x] **Phase 1**: Infrastructure Setup
+- [x] **Phase 2**: Testing Infrastructure
+- [x] **Phase 3**: Authentication & User Management
+- [x] **Phase 4**: ML Backend Migration
+- [ ] **Phase 5**: Frontend UI Development ← **Next**
+- [ ] **Phase 6**: Deployment & Monitoring
+- [ ] **Phase 7**: Data Migration & Validation
+- [ ] **Phase 8**: Documentation & Launch
 
 ---
 
-## 📞 Contact & Support
+## 📄 License
 
-- **Issues**: [GitHub Issues](https://github.com/yourusername/Billions/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/Billions/discussions)
-- **Email**: your.email@example.com
+See [LICENSE](./LICENSE) file for details.
 
 ---
 
-## 🌟 Star History
+## 🆘 Support
 
-If you find this project useful, please consider giving it a ⭐!
+- **Documentation**: Check docs in this repo
+- **Issues**: Create GitHub issue
+- **Questions**: See [FAQ.md](./FAQ.md)
 
 ---
 
-<div align="center">
+## 🎉 Acknowledgments
 
-### 💎 Built with passion for the markets
+Built with modern technologies:
+- Next.js & React Team
+- FastAPI creators
+- shadcn/ui components
+- PyTorch & TensorFlow teams
+- yfinance contributors
 
-**七転び八起き**
+---
 
-*Made with ❤️ by traders, for traders*
+**Built with ❤️ by the BILLIONS team**
 
-[Back to Top](#-billions-ml-prediction-system)
+**Status**: 🟢 50% Complete | Backend Operational | Frontend In Progress
 
-</div>
-
+**Star this repo if you find it useful!** ⭐
