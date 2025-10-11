@@ -1,10 +1,12 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import Image from "next/image";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { signOut } from "@/auth";
+import { TickerSearch } from "@/components/ticker-search";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -104,31 +106,49 @@ export default async function DashboardPage() {
           </Card>
         </div>
 
-        {/* Coming Soon */}
+        {/* Ticker Search */}
         <Card>
           <CardHeader>
-            <CardTitle>Features Coming Soon</CardTitle>
-            <CardDescription>Under development</CardDescription>
+            <CardTitle>Analyze Stock</CardTitle>
+            <CardDescription>
+              Search and analyze any ticker with ML predictions
+            </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-2">
-            <div className="flex items-center gap-2">
-              <Badge variant="outline">Phase 4</Badge>
-              <span className="text-sm">30-Day ML Predictions</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Badge variant="outline">Phase 4</Badge>
-              <span className="text-sm">Outlier Detection (Scalp, Swing, Longterm)</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Badge variant="outline">Phase 5</Badge>
-              <span className="text-sm">Interactive Charts & Analysis</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Badge variant="outline">Phase 5</Badge>
-              <span className="text-sm">Portfolio Tracking</span>
-            </div>
+          <CardContent>
+            <TickerSearch />
           </CardContent>
         </Card>
+
+        {/* Quick Navigation */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Link href="/outliers">
+            <Card className="hover:bg-accent transition-colors cursor-pointer">
+              <CardHeader>
+                <CardTitle className="text-lg">🎯 Outlier Detection</CardTitle>
+                <CardDescription>
+                  Find exceptional stock performance patterns
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  3 strategies: Scalp, Swing, Longterm
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
+
+          <Card className="opacity-50">
+            <CardHeader>
+              <CardTitle className="text-lg">💼 Portfolio (Coming Soon)</CardTitle>
+              <CardDescription>
+                Track your holdings and performance
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Badge variant="outline">Phase 5.3</Badge>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );
