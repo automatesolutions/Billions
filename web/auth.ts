@@ -3,6 +3,7 @@ import Google from "next-auth/providers/google";
 import type { NextAuthConfig } from "next-auth";
 
 export const config = {
+  secret: process.env.NEXTAUTH_SECRET || "development-secret-change-in-production",
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID,

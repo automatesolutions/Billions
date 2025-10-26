@@ -5,11 +5,8 @@ export default auth((req) => {
   const { nextUrl } = req;
   const isLoggedIn = !!req.auth;
 
-  // Define protected routes
-  const isProtectedRoute = nextUrl.pathname.startsWith("/dashboard") ||
-    nextUrl.pathname.startsWith("/analyze") ||
-    nextUrl.pathname.startsWith("/outliers") ||
-    nextUrl.pathname.startsWith("/portfolio");
+  // Define protected routes (demo mode - all pages accessible)
+  const isProtectedRoute = false; // Disable auth for demo mode
 
   // Redirect to login if accessing protected route while not logged in
   if (isProtectedRoute && !isLoggedIn) {

@@ -1,9 +1,14 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import Image from "next/image";
+import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ClientAnalyzePage } from "./client-page";
+import { NewsSection } from "./news-section";
+import { TechnicalIndicators } from "./technical-indicators";
+import { FairValueCard } from "@/components/fair-value-card";
 
 interface PageProps {
   params: Promise<{ ticker: string }>;
@@ -13,9 +18,10 @@ export default async function AnalyzePage({ params }: PageProps) {
   const session = await auth();
   const resolvedParams = await params;
 
-  if (!session?.user) {
-    redirect("/login");
-  }
+  // Allow demo access without authentication
+  // if (!session?.user) {
+  //   redirect("/login");
+  // }
 
   const ticker = resolvedParams.ticker.toUpperCase();
 
@@ -26,7 +32,7 @@ export default async function AnalyzePage({ params }: PageProps) {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Image
-              src="/logo.png"
+              src="/logo1.png"
               alt="BILLIONS Logo"
               width={60}
               height={60}
@@ -38,139 +44,25 @@ export default async function AnalyzePage({ params }: PageProps) {
               </p>
             </div>
           </div>
-          <Button variant="outline">Add to Watchlist</Button>
+          <div className="flex gap-2">
+            <Link href="/dashboard">
+              <Button variant="outline" size="sm">Back to Dashboard</Button>
+            </Link>
+            <Button variant="outline" size="sm">Add to Watchlist</Button>
+          </div>
         </div>
 
-        {/* Stock Info */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle>{ticker}</CardTitle>
-              <Badge variant="secondary">Loading...</Badge>
-            </div>
-            <CardDescription>
-              Stock information from /api/v1/predictions/info/{ticker}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-              <div>
-                <p className="text-muted-foreground">Current Price</p>
-                <p className="text-2xl font-bold">$---.--</p>
-              </div>
-              <div>
-                <p className="text-muted-foreground">Market Cap</p>
-                <p className="text-xl font-semibold">---B</p>
-              </div>
-              <div>
-                <p className="text-muted-foreground">Volume</p>
-                <p className="text-xl font-semibold">---M</p>
-              </div>
-              <div>
-                <p className="text-muted-foreground">Sector</p>
-                <p className="text-xl font-semibold">---</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Client-side data fetching components */}
+        <ClientAnalyzePage ticker={ticker} />
 
-        {/* Price Chart Placeholder */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Price Chart & 30-Day Prediction</CardTitle>
-            <CardDescription>
-              Historical prices with ML forecast overlay
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="aspect-[16/9] bg-muted/20 rounded-lg flex items-center justify-center border-2 border-dashed">
-              <div className="text-center text-muted-foreground">
-                <p className="text-lg font-semibold mb-2">Candlestick Chart</p>
-                <p className="text-sm">With 30-day prediction overlay</p>
-                <p className="text-xs mt-2">Coming in Phase 5.4 - Data Visualization</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* 30-Day Forecast */}
-        <Card>
-          <CardHeader>
-            <CardTitle>30-Day ML Forecast</CardTitle>
-            <CardDescription>
-              LSTM-based prediction from /api/v1/predictions/{ticker}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="p-4 border rounded-lg">
-                <p className="text-sm text-muted-foreground">Current Price</p>
-                <p className="text-2xl font-bold">$---.--</p>
-              </div>
-              <div className="p-4 border rounded-lg">
-                <p className="text-sm text-muted-foreground">30-Day Target</p>
-                <p className="text-2xl font-bold text-green-600">$---.--</p>
-                <p className="text-xs text-muted-foreground">+--% expected</p>
-              </div>
-              <div className="p-4 border rounded-lg">
-                <p className="text-sm text-muted-foreground">Confidence</p>
-                <p className="text-2xl font-bold">--%</p>
-                <p className="text-xs text-muted-foreground">Model accuracy</p>
-              </div>
-            </div>
-
-            <div className="text-sm text-muted-foreground">
-              Prediction data will be fetched from API using TanStack Query
-            </div>
-          </CardContent>
-        </Card>
+        {/* News & Sentiment */}
+        <NewsSection ticker={ticker} />
 
         {/* Technical Indicators */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Technical Indicators</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">RSI (14)</span>
-                <span className="font-semibold">--</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">MACD</span>
-                <span className="font-semibold">--</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Bollinger Bands</span>
-                <span className="font-semibold">--</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Volume Ratio</span>
-                <span className="font-semibold">--</span>
-              </div>
-            </CardContent>
-          </Card>
+        <TechnicalIndicators ticker={ticker} />
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Market Regime</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Trend</span>
-                <Badge variant="outline">--</Badge>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Volatility</span>
-                <Badge variant="outline">--</Badge>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Momentum</span>
-                <Badge variant="outline">--</Badge>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        {/* Fair Value Analysis */}
+        <FairValueCard ticker={ticker} />
       </div>
     </div>
   );

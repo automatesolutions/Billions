@@ -1,13 +1,20 @@
 'use client';
 
 import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function LoginPage() {
+  const router = useRouter();
+  
   const handleGoogleSignIn = async () => {
     await signIn("google", { callbackUrl: "/dashboard" });
+  };
+  
+  const handleDemoAccess = () => {
+    router.push("/dashboard");
   };
 
   return (
@@ -16,7 +23,7 @@ export default function LoginPage() {
         <CardHeader className="space-y-4 text-center">
           <div className="flex justify-center">
             <Image
-              src="/logo.png"
+              src="/logo1.png"
               alt="BILLIONS Logo"
               width={80}
               height={80}
@@ -37,9 +44,30 @@ export default function LoginPage() {
           </div>
           
           <Button 
+            onClick={handleDemoAccess} 
+            className="w-full"
+            size="lg"
+            variant="default"
+          >
+            Continue to Dashboard (Demo)
+          </Button>
+          
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-background px-2 text-muted-foreground">
+                Or sign in with
+              </span>
+            </div>
+          </div>
+          
+          <Button 
             onClick={handleGoogleSignIn} 
             className="w-full"
             size="lg"
+            variant="outline"
           >
             <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24">
               <path
@@ -63,7 +91,7 @@ export default function LoginPage() {
           </Button>
           
           <div className="text-xs text-muted-foreground text-center">
-            By signing in, you agree to our Terms of Service and Privacy Policy.
+            <strong>Note:</strong> Google Sign-In requires OAuth setup. Use "Continue to Dashboard" for demo access.
           </div>
         </CardContent>
       </Card>

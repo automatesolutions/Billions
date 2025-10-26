@@ -12,6 +12,9 @@ interface NavItem {
 const navItems: NavItem[] = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/outliers", label: "Outliers" },
+  { href: "/portfolio", label: "Portfolio" },
+  { href: "/trading/hft", label: "HFT Trading" },
+  { href: "/trading/quantitative", label: "Quant Trading" },
 ];
 
 export function NavMenu() {

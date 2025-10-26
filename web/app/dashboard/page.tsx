@@ -6,14 +6,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { signOut } from "@/auth";
-import { TickerSearch } from "@/components/ticker-search";
+import { AnalyzeStockSearch } from "@/components/analyze-stock-search";
+import { NASDAQNewsSection } from "@/components/nasdaq-news-section";
 
 export default async function DashboardPage() {
   const session = await auth();
 
-  if (!session?.user) {
-    redirect("/login");
-  }
+  // For demo purposes, allow access without authentication
+  // if (!session?.user) {
+  //   redirect("/login");
+  // }
 
   async function handleSignOut() {
     "use server";
@@ -22,12 +24,12 @@ export default async function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-background p-8">
-      <div className="max-w-7xl mx-auto space-y-8">
+      <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
             <Image
-              src="/logo.png"
+              src="/logo1.png"
               alt="BILLIONS Logo"
               width={60}
               height={60}
@@ -35,119 +37,106 @@ export default async function DashboardPage() {
             <div>
               <h1 className="text-3xl font-bold">Dashboard</h1>
               <p className="text-muted-foreground">
-                Welcome back, {session.user.name}!
+                {session?.user ? `Welcome back, ${session.user.name}!` : "Demo Dashboard - No login required"}
               </p>
             </div>
           </div>
           
-          <form action={handleSignOut}>
-            <Button variant="outline" type="submit">
-              Sign Out
-            </Button>
-          </form>
-        </div>
-
-        {/* User Info Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Account Information</CardTitle>
-            <CardDescription>Your profile details</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center gap-4">
-              {session.user.image && (
-                <Image
-                  src={session.user.image}
-                  alt={session.user.name || "User"}
-                  width={64}
-                  height={64}
-                  className="rounded-full"
-                />
-              )}
-              <div>
-                <div className="font-semibold text-lg">{session.user.name}</div>
-                <div className="text-sm text-muted-foreground">{session.user.email}</div>
-                <Badge variant="secondary" className="mt-2">Free Tier</Badge>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm font-medium">Watchlist</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">0</div>
-              <p className="text-xs text-muted-foreground">Stocks tracked</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm font-medium">Predictions</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">0</div>
-              <p className="text-xs text-muted-foreground">Generated today</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm font-medium">Alerts</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">0</div>
-              <p className="text-xs text-muted-foreground">Active alerts</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Ticker Search */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Analyze Stock</CardTitle>
-            <CardDescription>
-              Search and analyze any ticker with ML predictions
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <TickerSearch />
-          </CardContent>
-        </Card>
-
-        {/* Quick Navigation */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Link href="/outliers">
-            <Card className="hover:bg-accent transition-colors cursor-pointer">
-              <CardHeader>
-                <CardTitle className="text-lg">🎯 Outlier Detection</CardTitle>
-                <CardDescription>
-                  Find exceptional stock performance patterns
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">
-                  3 strategies: Scalp, Swing, Longterm
-                </p>
+          <div className="flex items-center gap-4">
+            {/* Account Information - Compact with Avatar */}
+            <Card className="bg-background border-0 shadow-none">
+              <CardContent className="p-2.5">
+                <div className="flex items-center gap-2.5">
+                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-yellow-500 text-white font-bold text-sm">
+                    {session?.user?.name?.charAt(0).toUpperCase() || "D"}
+                  </div>
+                  <div>
+                    <div className="font-semibold text-white text-xs">{session?.user?.name || "Demo User"}</div>
+                    <div className="text-xs text-gray-400 text-[10px]">{session?.user?.email || "demo@billions.app"}</div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
-          </Link>
 
-          <Card className="opacity-50">
-            <CardHeader>
-              <CardTitle className="text-lg">💼 Portfolio (Coming Soon)</CardTitle>
-              <CardDescription>
-                Track your holdings and performance
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Badge variant="outline">Phase 5.3</Badge>
-            </CardContent>
-          </Card>
+            {session?.user ? (
+              <form action={handleSignOut}>
+                <Button variant="outline" type="submit">
+                  Sign Out
+                </Button>
+              </form>
+            ) : (
+              <Link href="/">
+                <Button variant="outline">
+                  Back to Home
+                </Button>
+              </Link>
+            )}
+          </div>
+        </div>
+
+        <div className="flex gap-8">
+          {/* Sidebar */}
+          <div className="w-64 space-y-4 flex-shrink-0">
+            {/* Quant Trade */}
+            <Link href="/trading/hft">
+              <Card className="hover:bg-gray-900 transition-colors cursor-pointer bg-background border-0 shadow-none">
+                <CardHeader>
+                  <CardTitle className="text-lg text-white">💼 Quant Trade</CardTitle>
+                  <CardDescription className="text-gray-500">
+                    Track holdings and performance
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-gray-500">
+                    Real-time trading with Polygon.io
+                  </p>
+                </CardContent>
+              </Card>
+            </Link>
+
+            {/* Outlier Detection */}
+            <Link href="/outliers">
+              <Card className="hover:bg-gray-900 transition-colors cursor-pointer bg-background border-0 shadow-none">
+                <CardHeader>
+                  <CardTitle className="text-lg text-white">🎯 Outlier Detection</CardTitle>
+                  <CardDescription className="text-gray-500">
+                    Find exceptional performance patterns
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-gray-500">
+                    3 strategies: Scalp, Swing, Longterm
+                  </p>
+                </CardContent>
+              </Card>
+            </Link>
+
+            {/* Capitulation Detection */}
+            <Link href="/capitulation">
+              <Card className="hover:bg-gray-900 transition-colors cursor-pointer bg-background border-0 shadow-none">
+                <CardHeader>
+                  <CardTitle className="text-lg text-white">⚠️ Capitulation Detection</CardTitle>
+                  <CardDescription className="text-gray-500">
+                    Screen all NASDAQ stocks for capitulation signals
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-gray-500">
+                    Volume spikes, RSI oversold, MACD bearish
+                  </p>
+                </CardContent>
+              </Card>
+            </Link>
+          </div>
+
+          {/* Main Content */}
+          <div className="flex-1 space-y-8">
+            {/* Analyze Stock */}
+            <AnalyzeStockSearch />
+
+            {/* NASDAQ First-Edge News */}
+            <NASDAQNewsSection />
+          </div>
         </div>
       </div>
     </div>
