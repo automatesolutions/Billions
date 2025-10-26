@@ -37,6 +37,23 @@ class Settings(BaseSettings):
     # External APIs
     ALPHA_VANTAGE_API_KEY: str = ""
     FRED_API_KEY: str = ""
+    POLYGON_API_KEY: str = ""
+    
+    # Enhanced News Service API Keys
+    NEWS_API_KEY: str = ""
+    OPENAI_API_KEY: str = ""
+    ANTHROPIC_API_KEY: str = ""
+    
+    # Alpaca Trading API (set via .env)
+    ALPACA_API_KEY: str = ""
+    ALPACA_SECRET_KEY: str = ""
+    ALPACA_BASE_URL: str = "https://paper-api.alpaca.markets/v2"
+    
+    # HFT optional settings (can be overridden via .env)
+    HFT_EDGE_THRESHOLD: float = 0.0
+    HFT_MAX_POSITION_SIZE: int = 0
+    HFT_MAX_DAILY_LOSS: float = 0.0
+    HFT_MAX_LEVERAGE: float = 0.0
     
     # JWT
     SECRET_KEY: str = "your-secret-key-change-in-production"

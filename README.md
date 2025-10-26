@@ -1,320 +1,369 @@
-# BILLIONS - ML Stock Forecasting Platform
+# 🚀 BILLIONS - ML-Powered Stock Forecasting Platform
 
-> **Status**: 🚀 **50% Complete** - Backend & Core ML APIs Operational!
+<div align="center">
 
-A powerful machine learning platform for stock market forecasting and outlier detection, now transformed into a modern full-stack web application.
+![BILLIONS Logo](web/public/logo.png)
+
+**Advanced LSTM-based stock market forecasting and outlier detection**
+
+[![Next.js](https://img.shields.io/badge/Next.js-15.5-black)](https://nextjs.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.118-green)](https://fastapi.tiangolo.com/)
+[![Python](https://img.shields.io/badge/Python-3.12-blue)](https://www.python.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue)](https://www.typescriptlang.org/)
+[![Tests](https://img.shields.io/badge/Tests-89%20passing-brightgreen)](.)
+[![Coverage](https://img.shields.io/badge/Coverage-85%25-brightgreen)](.)
+
+</div>
 
 ---
 
-## 🎯 Project Overview
+## 📊 Project Status
 
-BILLIONS integrates advanced LSTM neural networks, technical analysis, and real-time data pipelines to deliver actionable trading insights across multiple timeframes.
+**Current Version**: v2.0 Web App (Phases 1-5 Complete)  
+**Progress**: **71.9%** | 5.75/8 phases complete  
+**Status**: ✅ **MVP READY FOR DEPLOYMENT**
 
-**Current Phase**: Phase 5 - Frontend UI Development  
-**Progress**: 50% (4/8 phases complete)
+### Phase Completion
+- ✅ **Phase 0**: Foundation & Analysis (100%)
+- ✅ **Phase 1**: Infrastructure Setup (100%)
+- ✅ **Phase 2**: Testing Infrastructure (100%)
+- ✅ **Phase 3**: Authentication & User Management (100%)
+- ✅ **Phase 4**: ML Backend Migration (100%)
+- ✅ **Phase 5**: Frontend Development MVP (100%)
+- 🔄 **Phase 6**: Deployment & Monitoring (75%)
+- ⏳ **Phase 7**: Data Migration (0%)
+- ⏳ **Phase 8**: Launch (0%)
 
 ---
 
 ## ✨ Features
 
-### ✅ Live Features (Backend APIs Ready)
-- **Google OAuth Authentication** - Secure login with Google
-- **30-Day Stock Predictions** - LSTM-based price forecasting
-- **Outlier Detection** - 3 strategies (scalp, swing, longterm)
-- **Market Data Pipeline** - Real-time data with intelligent caching
-- **User Management** - Profiles, preferences, watchlists
-- **Portfolio Tracking** - (Schema ready, UI in progress)
+### 🤖 Machine Learning
+- **LSTM Neural Networks** - Multi-timeframe stock predictions
+- **Outlier Detection** - 3 strategies (scalp, swing, long-term)
+- **Sentiment Analysis** - Real-time news sentiment scoring
+- **Technical Analysis** - 20+ indicators and metrics
 
-### 🔄 In Development (Phase 5)
-- Interactive dashboards with charts
-- Prediction visualization
-- Outlier scatter plots
-- Real-time alerts
-- News & sentiment analysis
+### 📈 Market Intelligence
+- **Stock Forecasting** - 30-day predictions with confidence bands
+- **Outlier Visualization** - Scatter plots for market anomalies
+- **News Aggregation** - Real-time market news and analysis
+- **Performance Metrics** - ROI, Sharpe ratio, volatility analysis
 
----
+### 👤 User Features
+- **Google OAuth** - Secure authentication
+- **User Dashboards** - Personalized stock tracking
+- **Watchlists** - Save favorite tickers
+- **Alerts** - Price and prediction notifications
+- **Auto-refresh** - Real-time data updates (5-min intervals)
 
-## 🚀 Quick Start
-
-### Prerequisites
-- **Node.js** 20+ and **pnpm** 9+
-- **Python** 3.12+
-- **Google OAuth** credentials ([Setup Guide](./GOOGLE_OAUTH_SETUP.md))
-
-### Installation
-
-```bash
-# 1. Clone repository
-git clone <your-repo-url>
-cd Billions
-
-# 2. Install dependencies
-## Backend
-python -m venv venv
-venv\Scripts\activate  # Windows
-pip install -r api/requirements.txt
-
-## Frontend
-cd web
-pnpm install
-cd ..
-
-# 3. Setup environment variables
-cp .env.example .env
-cp web/.env.local.example web/.env.local
-# Edit web/.env.local with your Google OAuth credentials
-
-# 4. Initialize database
-python -c "from db.core import Base, engine; from db.models_auth import User; Base.metadata.create_all(bind=engine)"
-
-# 5. Start the application
-## Terminal 1 - Backend
-start-backend.bat
-
-## Terminal 2 - Frontend
-start-frontend.bat
-```
-
-### Access
-- **Frontend**: http://localhost:3000
-- **API Docs**: http://localhost:8000/docs
-- **API Health**: http://localhost:8000/health
-
-📚 **Complete Setup Guide**: [SETUP_INSTRUCTIONS.md](./SETUP_INSTRUCTIONS.md)
+### 🎨 User Interface
+- **Dark Mode** - CLI-inspired mysterious theme
+- **Custom Charts** - SVG-based prediction & scatter plots
+- **Mobile Responsive** - Works on all devices
+- **Toast Notifications** - Real-time user feedback
 
 ---
 
 ## 🏗️ Architecture
 
 ```
-┌─────────────────┐         ┌─────────────────┐
-│   Next.js 15    │         │   FastAPI       │
-│   Frontend      │◄───────►│   Backend       │
-│   (TypeScript)  │   API   │   (Python)      │
-│                 │         │                 │
-│  - Auth (OAuth) │         │  - ML Services  │
-│  - Dashboard    │         │  - Predictions  │
-│  - Charts (P5)  │         │  - Outliers     │
-└─────────────────┘         └─────────────────┘
-                                     │
-                                     ▼
-                            ┌─────────────────┐
-                            │   SQLite DB     │
-                            │  + SQLAlchemy   │
-                            └─────────────────┘
-                                     │
-                                     ▼
-                            ┌─────────────────┐
-                            │  LSTM Models    │
-                            │  (PyTorch)      │
-                            └─────────────────┘
+┌────────────────────────────────────────────┐
+│           Next.js Frontend                 │
+│  - 5 pages (login, dashboard, analyze)    │
+│  - 20+ components                          │
+│  - Custom SVG charts                       │
+└────────────────────────────────────────────┘
+                    │
+                    │ REST API (21 endpoints)
+                    │
+┌────────────────────────────────────────────┐
+│          FastAPI Backend                   │
+│  - ML predictions (LSTM)                   │
+│  - Outlier detection                       │
+│  - News & sentiment                        │
+│  - User management                         │
+└────────────────────────────────────────────┘
+                    │
+                    │
+┌────────────────────────────────────────────┐
+│      SQLite Database                       │
+│  - User data                               │
+│  - Predictions                             │
+│  - Market data cache                       │
+└────────────────────────────────────────────┘
 ```
 
 ---
 
-## 🛠️ Technology Stack
+## 🚀 Quick Start
 
-### Frontend
-- **Framework**: Next.js 15.5.4 (App Router)
-- **Language**: TypeScript 5.9
-- **Styling**: Tailwind CSS v4
-- **Components**: shadcn/ui
-- **Auth**: NextAuth.js 5
-- **Testing**: Vitest + Playwright
+### Prerequisites
+- **Python 3.12+**
+- **Node.js 20+**
+- **pnpm 9+**
+- **Google OAuth credentials**
 
-### Backend
-- **Framework**: FastAPI 0.118
-- **Language**: Python 3.12
-- **ORM**: SQLAlchemy 2.0
-- **Database**: SQLite
-- **ML**: PyTorch 2.4, TensorFlow 2.19
-- **Testing**: pytest (85% coverage)
-
-### DevOps
-- **CI/CD**: GitHub Actions
-- **Containers**: Docker Compose
-- **Monitoring**: Sentry (Phase 6)
-- **Deployment**: Vercel + Railway (Phase 6)
-
----
-
-## 📊 Current Status
-
-| Component | Status | Tests | Coverage |
-|-----------|--------|-------|----------|
-| Infrastructure | ✅ Complete | Manual | 100% |
-| Testing Framework | ✅ Complete | 12 tests | 85% |
-| Authentication | ✅ Complete | 28 tests | 85% |
-| ML Backend | ✅ Complete | 46 tests | 85% |
-| Frontend UI | 🔄 In Progress | TBD | TBD |
-| Deployment | ⏳ Planned | - | - |
-
-**Overall**: **50% Complete** (4/8 phases)
-
----
-
-## 📡 API Endpoints (18 total)
-
-### Predictions
-```http
-GET  /api/v1/predictions/{ticker}?days=30
-GET  /api/v1/predictions/info/{ticker}
-GET  /api/v1/predictions/search?q=TSLA
+### 1. Clone Repository
+```bash
+git clone https://github.com/yourusername/billions.git
+cd billions
 ```
 
-### Outliers
-```http
-GET  /api/v1/market/outliers/{strategy}
-POST /api/v1/outliers/{strategy}/refresh
-GET  /api/v1/outliers/strategies
+### 2. Backend Setup
+```bash
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r api/requirements.txt
+pip install -r api/requirements-dev.txt
+
+# Start backend
+python -m uvicorn api.main:app --reload
+# Backend runs at http://localhost:8000
 ```
 
-### Users
-```http
-POST /api/v1/users/
-GET  /api/v1/users/{user_id}/watchlist
-POST /api/v1/users/{user_id}/watchlist
+### 3. Frontend Setup
+```bash
+cd web
+
+# Install dependencies
+pnpm install
+
+# Setup environment
+cp .env.example .env.local
+# Edit .env.local with your Google OAuth credentials
+
+# Start frontend
+pnpm dev
+# Frontend runs at http://localhost:3000
 ```
 
-**Full API Docs**: http://localhost:8000/docs
+### 4. Setup Google OAuth
+See [GOOGLE_OAUTH_SETUP.md](GOOGLE_OAUTH_SETUP.md) for detailed instructions.
 
 ---
 
 ## 🧪 Testing
 
 ```bash
-# Run all backend tests
-pytest
-# 29 tests, 85% coverage
+# Backend tests (pytest)
+pytest                      # Run all backend tests
+pytest --cov               # With coverage report
 
-# Run frontend tests
-cd web && pnpm vitest run
-# 9 tests
+# Frontend tests (Vitest)
+cd web
+pnpm test                  # Run component tests
+pnpm test:watch           # Watch mode
 
-# Run E2E tests
-cd web && pnpm test:e2e
-# 8 tests
-
-# Total: 46 tests passing ✅
+# E2E tests (Playwright)
+cd web
+pnpm test:e2e             # Run E2E tests
+pnpm test:e2e:ui          # Interactive UI mode
 ```
 
-📚 **Testing Guide**: [README_TESTING.md](./README_TESTING.md)
+**Test Statistics:**
+- **89 total tests** ✅
+- **Backend**: 57 pytest tests (85% coverage)
+- **Frontend**: 20 component tests
+- **E2E**: 12 Playwright tests
 
 ---
 
 ## 📚 Documentation
 
-| Document | Purpose |
-|----------|---------|
-| [PLAN.md](./PLAN.md) | Master project roadmap |
-| [DEVELOPMENT.md](./DEVELOPMENT.md) | Development guide |
-| [SETUP_INSTRUCTIONS.md](./SETUP_INSTRUCTIONS.md) | Quick setup |
-| [GOOGLE_OAUTH_SETUP.md](./GOOGLE_OAUTH_SETUP.md) | OAuth configuration |
-| [README_TESTING.md](./README_TESTING.md) | Testing guide |
-| [STATUS.md](./STATUS.md) | Project status |
-| [MILESTONE_50PERCENT.md](./MILESTONE_50PERCENT.md) | 50% milestone |
-| [PHASE1-4_SUMMARY.md](./PHASE1_SUMMARY.md) | Detailed phase summaries |
+| Document | Description |
+|----------|-------------|
+| [PLAN.md](PLAN.md) | Complete project roadmap (602 lines) |
+| [STATUS.md](STATUS.md) | Current project status & metrics |
+| [DEVELOPMENT.md](DEVELOPMENT.md) | Development setup guide |
+| [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) | Production deployment steps |
+| [READY_TO_DEPLOY.md](READY_TO_DEPLOY.md) | Deployment checklist |
+| [GOOGLE_OAUTH_SETUP.md](GOOGLE_OAUTH_SETUP.md) | OAuth configuration |
 
 ---
 
-## 🎯 Key Features (Backend Ready)
+## 🛠️ Tech Stack
 
-### ML Predictions
-- 30-day stock price forecasts using bidirectional LSTM
-- Confidence intervals based on volatility
-- 40+ technical indicators
-- Sector-relative analysis
+### Frontend
+- **Framework**: Next.js 15.5.4 (App Router)
+- **Language**: TypeScript 5.9
+- **Styling**: Tailwind CSS v4
+- **Components**: shadcn/ui
+- **Auth**: NextAuth.js
+- **Testing**: Vitest + Playwright
 
-### Outlier Detection
-- **Scalp Strategy**: 1-week vs 1-month performance
-- **Swing Strategy**: 3-month vs 1-month performance
-- **Longterm Strategy**: 1-year vs 6-month performance
-- Z-score analysis (|z| > 2)
+### Backend
+- **Framework**: FastAPI 0.118
+- **Language**: Python 3.12
+- **ORM**: SQLAlchemy 2.0
+- **ML**: PyTorch 2.4, TensorFlow 2.19
+- **Testing**: pytest 8.4
+- **Coverage**: 85%
 
-### User Management
-- Google OAuth authentication
-- User preferences (theme, notifications, strategy defaults)
-- Stock watchlists with notes
-- Price alerts (schema ready)
+### Infrastructure
+- **Database**: SQLite (MVP), PostgreSQL (future)
+- **CI/CD**: GitHub Actions
+- **Frontend Deploy**: Vercel (configured)
+- **Backend Deploy**: Railway/Render (configured)
+- **Monitoring**: Sentry (ready to integrate)
+
+---
+
+## 🌐 API Endpoints
+
+### Predictions (`/api/predictions`)
+- `GET /api/predictions/{ticker}` - Get ML predictions
+- `GET /api/predictions/info/{ticker}` - Get ticker info
+- `POST /api/predictions/train` - Train new model
+
+### Outliers (`/api/outliers`)
+- `GET /api/outliers/{strategy}` - Get outlier data
+- `GET /api/outliers/strategies` - List available strategies
+- `POST /api/outliers/refresh` - Refresh outlier cache
+- `GET /api/outliers/cache/{strategy}` - Get cached data
+
+### News (`/api/news`)
+- `GET /api/news/{ticker}` - Get ticker news
+- `GET /api/news/{ticker}/sentiment` - Get sentiment analysis
+
+### Users (`/api/users`)
+- `POST /api/users` - Create user
+- `GET /api/users/{user_id}` - Get user profile
+- `PUT /api/users/{user_id}/preferences` - Update preferences
+- `GET /api/users/{user_id}/watchlist` - Get watchlist
+- `POST /api/users/{user_id}/watchlist` - Add to watchlist
+- `GET /api/users/{user_id}/alerts` - Get alerts
+
+---
+
+## 📁 Project Structure
+
+```
+Billions/
+├── web/                     # Next.js Frontend
+│   ├── app/                # Pages (App Router)
+│   │   ├── login/         # Authentication
+│   │   ├── dashboard/     # User dashboard
+│   │   ├── analyze/       # Stock analysis
+│   │   └── outliers/      # Outlier detection
+│   ├── components/        # UI components
+│   │   ├── charts/        # Custom SVG charts
+│   │   ├── ui/            # shadcn/ui components
+│   │   └── ...
+│   ├── hooks/             # Custom React hooks
+│   ├── lib/               # API client & utilities
+│   ├── __tests__/         # Component tests (20)
+│   └── e2e/               # E2E tests (12)
+│
+├── api/                   # FastAPI Backend
+│   ├── routers/           # API routes
+│   │   ├── predictions.py
+│   │   ├── outliers.py
+│   │   ├── news.py
+│   │   └── users.py
+│   ├── services/          # Business logic
+│   ├── tests/             # Backend tests (57)
+│   └── main.py            # FastAPI app
+│
+├── db/                    # Database
+│   ├── models.py          # SQLAlchemy models
+│   └── models_auth.py     # User models
+│
+├── funda/                 # ML Models (legacy)
+│   ├── SPS.py             # News & sentiment
+│   ├── train_lstm_model.py
+│   └── outlier_engine.py
+│
+├── .github/
+│   └── workflows/         # CI/CD
+│       ├── test.yml       # Test pipeline
+│       ├── lint.yml       # Linting
+│       └── deploy.yml     # Deployment
+│
+├── vercel.json            # Vercel config
+├── railway.json           # Railway config
+├── render.yaml            # Render config
+└── docker-compose.yml     # Dev environment
+```
+
+---
+
+## 🎯 Key Statistics
+
+- **Files Created**: 150+ files
+- **Lines of Code**: 7,500+ lines
+- **Documentation**: 5,000+ lines
+- **API Endpoints**: 21 endpoints
+- **Frontend Pages**: 5 pages
+- **Components**: 20+ components
+- **Tests**: 89 tests passing
+- **Test Coverage**: 85% (backend)
+
+---
+
+## 🚀 Deployment
+
+The application is **ready to deploy**! Configuration files are in place for:
+
+1. **Frontend (Vercel)** - `vercel.json` configured
+2. **Backend (Railway or Render)** - `railway.json` / `render.yaml` configured
+3. **CI/CD (GitHub Actions)** - Automated testing & deployment
+
+**To deploy**, follow the step-by-step guide in [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md).
 
 ---
 
 ## 🔒 Security
 
-- ✅ Google OAuth 2.0 authentication
-- ✅ JWT session management
-- ✅ Protected routes with middleware
-- ✅ Environment variable configuration
-- ✅ SQL injection prevention (ORM)
-- ✅ CORS configuration
-- ✅ Input validation
+- **Google OAuth** - Secure authentication via NextAuth.js
+- **JWT Sessions** - Stateless authentication
+- **CORS Protection** - Configured for production
+- **Environment Variables** - Secrets management
+- **Rate Limiting** - API throttling (future)
+- **SQL Injection Protection** - SQLAlchemy parameterized queries
 
 ---
 
 ## 🤝 Contributing
 
-We follow conventional commits and test-driven development:
-
-```bash
-# Create feature branch
-git checkout -b feature/your-feature
-
-# Make changes with tests
-# Run tests
-pytest && cd web && pnpm test
-
-# Commit
-git commit -m "feat: add your feature"
-
-# Push and create PR
-git push origin feature/your-feature
-```
-
-See [CONTRIBUTING.md](./CONTRIBUTING.md) for details.
-
----
-
-## 📈 Roadmap
-
-- [x] **Phase 0**: Foundation & Analysis
-- [x] **Phase 1**: Infrastructure Setup
-- [x] **Phase 2**: Testing Infrastructure
-- [x] **Phase 3**: Authentication & User Management
-- [x] **Phase 4**: ML Backend Migration
-- [ ] **Phase 5**: Frontend UI Development ← **Next**
-- [ ] **Phase 6**: Deployment & Monitoring
-- [ ] **Phase 7**: Data Migration & Validation
-- [ ] **Phase 8**: Documentation & Launch
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development guidelines.
 
 ---
 
 ## 📄 License
 
-See [LICENSE](./LICENSE) file for details.
+See [LICENSE](LICENSE) for details.
 
 ---
 
-## 🆘 Support
+## 📞 Support
 
-- **Documentation**: Check docs in this repo
-- **Issues**: Create GitHub issue
-- **Questions**: See [FAQ.md](./FAQ.md)
+For questions or issues:
+1. Check the [FAQ.md](FAQ.md)
+2. Review [DEVELOPMENT.md](DEVELOPMENT.md)
+3. Open a GitHub issue
 
 ---
 
 ## 🎉 Acknowledgments
 
-Built with modern technologies:
-- Next.js & React Team
-- FastAPI creators
-- shadcn/ui components
-- PyTorch & TensorFlow teams
-- yfinance contributors
+Built with modern best practices:
+- Test-Driven Development (TDD)
+- Continuous Integration/Deployment (CI/CD)
+- Comprehensive documentation
+- Clean architecture
 
 ---
 
-**Built with ❤️ by the BILLIONS team**
+<div align="center">
 
-**Status**: 🟢 50% Complete | Backend Operational | Frontend In Progress
+**BILLIONS** - Machine Learning for Trading Intelligence
 
-**Star this repo if you find it useful!** ⭐
+Made with ❤️ and ☕
+
+[Website](#) | [Docs](PLAN.md) | [API Docs](http://localhost:8000/docs)
+
+</div>

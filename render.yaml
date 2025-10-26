@@ -1,0 +1,30 @@
+services:
+  # Backend API
+  - type: web
+    name: billions-api
+    env: python
+    region: oregon
+    plan: free
+    buildCommand: "pip install -r api/requirements.txt"
+    startCommand: "uvicorn api.main:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.0
+      - key: DATABASE_URL
+        value: sqlite:///./billions.db
+      - key: DEBUG
+        value: false
+      - key: ALPHA_VANTAGE_API_KEY
+        sync: false
+      - key: FRED_API_KEY
+        sync: false
+      - key: SECRET_KEY
+        generateValue: true
+    healthCheckPath: /health
+    
+databases:
+  # Note: For production, consider PostgreSQL
+  # SQLite works for MVP but has limitations in distributed environments
+  - name: billions-db
+    plan: free
+

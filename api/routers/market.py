@@ -2,7 +2,7 @@
 Market data endpoints
 """
 
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from api.database import get_db
@@ -11,6 +11,14 @@ import logging
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/market", tags=["Market Data"])
+
+# Import refresh functions
+try:
+    from funda.refresh_outliers import start_refresh_thread, get_refresh_status
+    REFRESH_AVAILABLE = True
+except ImportError:
+    logger.warning("Refresh functions not available")
+    REFRESH_AVAILABLE = False
 
 
 @router.get("/outliers/{strategy}")
@@ -103,4 +111,69 @@ async def get_performance_metrics(
     except Exception as e:
         logger.error(f"Error fetching performance metrics for {strategy}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/refresh")
+async def trigger_refresh(background_tasks: BackgroundTasks):
+    """
+    Trigger a refresh of all market data and outlier detection
+    
+    This will:
+    - Fetch latest NASDAQ tickers
+    - Download market data
+    - Calculate performance metrics
+    - Detect outliers for all strategies
+    
+    Returns immediately with status. Use GET /refresh/status to check progress.
+    """
+    if not REFRESH_AVAILABLE:
+        raise HTTPException(
+            status_code=503,
+            detail="Refresh functionality not available"
+        )
+    
+    # Check if already running
+    status = get_refresh_status()
+    if status['is_running']:
+        return {
+            "message": "Refresh already in progress",
+            "status": status
+        }
+    
+    # Start refresh in background
+    success = start_refresh_thread()
+    
+    if success:
+        return {
+            "message": "Data refresh started",
+            "status": get_refresh_status()
+        }
+    else:
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to start refresh"
+        )
+
+
+@router.get("/refresh/status")
+async def get_refresh_status_endpoint():
+    """
+    Get current refresh status
+    
+    Returns:
+    - is_running: bool
+    - progress: int (0-100)
+    - current_strategy: str
+    - message: str
+    - start_time: timestamp
+    - estimated_completion: timestamp
+    """
+    if not REFRESH_AVAILABLE:
+        return {
+            "is_running": False,
+            "progress": 0,
+            "message": "Refresh functionality not available"
+        }
+    
+    return get_refresh_status()
 
