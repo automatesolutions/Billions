@@ -160,7 +160,7 @@ async def get_urgent_nasdaq_news(
             "news_count": len(processed_news),
             "news_items": processed_news,
             "urgent_count": len([item for item in processed_news if item["is_urgent"]]),
-            "last_updated": datetime.now().isoformat()
+            "last_updated": datetime.now(timezone.utc).isoformat()
         }
     
     except Exception as e:
@@ -237,7 +237,7 @@ async def get_nasdaq_news_by_category(
             "category": category,
             "news_count": len(processed_news),
             "news_items": processed_news,
-            "last_updated": datetime.now().isoformat()
+            "last_updated": datetime.now(timezone.utc).isoformat()
         }
     
     except Exception as e:

@@ -180,8 +180,10 @@ class NASDAQNewsService:
                                     content=item.get('description', ''),
                                     source=item.get('source', {}).get('name', 'NewsAPI'),
                                     url=item.get('url', ''),
-                                    published_at=datetime.fromisoformat(
-                                        item.get('publishedAt', '').replace('Z', '+00:00')
+                                    published_at=self._ensure_timezone_aware(
+                                        datetime.fromisoformat(
+                                            item.get('publishedAt', '').replace('Z', '+00:00')
+                                        ) if item.get('publishedAt') else datetime.now(timezone.utc)
                                     ),
                                     category=self._categorize_news(content),
                                     impact_level=self._assess_impact(content),
@@ -234,8 +236,8 @@ class NASDAQNewsService:
                                         content=item.get('summary', ''),
                                         source=item.get('source', 'Alpha Vantage'),
                                         url=item.get('url', ''),
-                                        published_at=datetime.fromisoformat(
-                                            item.get('time_published', '').replace('Z', '+00:00')
+                                        published_at=self._parse_alpha_vantage_date(
+                                            item.get('time_published', '')
                                         ),
                                         category=self._categorize_news(content),
                                         impact_level=self._assess_impact(content),
@@ -434,6 +436,41 @@ class NASDAQNewsService:
         
         return min(urgency_score, 10.0)  # Cap at 10
     
+    def _ensure_timezone_aware(self, dt: datetime) -> datetime:
+        """Ensure datetime is timezone-aware (UTC)"""
+        if dt.tzinfo is None:
+            return dt.replace(tzinfo=timezone.utc)
+        return dt
+    
+    def _parse_alpha_vantage_date(self, date_str: str) -> datetime:
+        """Parse Alpha Vantage date string"""
+        if not date_str:
+            return datetime.now(timezone.utc)
+        
+        try:
+            # Alpha Vantage format: "20240101T120000" or "20240101T120000+00:00"
+            # Try ISO format first
+            date_str_clean = date_str.replace('Z', '+00:00')
+            try:
+                dt = datetime.fromisoformat(date_str_clean)
+                return self._ensure_timezone_aware(dt)
+            except (ValueError, AttributeError):
+                pass
+            
+            # Try parsing as YYYYMMDDTHHMMSS format
+            try:
+                if 'T' in date_str:
+                    date_part, time_part = date_str.split('T')
+                    if len(date_part) == 8 and len(time_part) >= 6:
+                        dt = datetime.strptime(date_str[:15], '%Y%m%dT%H%M%S')
+                        return self._ensure_timezone_aware(dt)
+            except (ValueError, AttributeError):
+                pass
+        except Exception:
+            pass
+        
+        return datetime.now(timezone.utc)
+    
     def _parse_rss_date(self, date_str: str) -> datetime:
         """Parse RSS date string"""
         try:
@@ -448,9 +485,7 @@ class NASDAQNewsService:
                 try:
                     parsed = datetime.strptime(date_str, fmt)
                     # If no timezone info, make it UTC-aware
-                    if parsed.tzinfo is None:
-                        return parsed.replace(tzinfo=timezone.utc)
-                    return parsed
+                    return self._ensure_timezone_aware(parsed)
                 except ValueError:
                     continue
             
