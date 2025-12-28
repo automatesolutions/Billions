@@ -34,6 +34,13 @@
 - ⏳ **Phase 7**: Data Migration (0%)
 - ⏳ **Phase 8**: Launch (0%)
 
+### Latest Updates (2025)
+- ✅ **System Architecture Documentation** - Complete flowchart with file references
+- ✅ **Interactive HTML Visualization** - Visual architecture explorer
+- ✅ **Enhanced API Documentation** - 30+ endpoints documented
+- ✅ **Communication Flow Diagrams** - Frontend ↔ Backend flows
+- ✅ **File Structure Mapping** - Complete file organization guide
+
 ---
 
 ## ✨ Features
@@ -70,12 +77,14 @@
 ```
 ┌────────────────────────────────────────────┐
 │           Next.js Frontend                 │
-│  - 5 pages (login, dashboard, analyze)    │
-│  - 20+ components                          │
+│  - 8+ pages (login, dashboard, analyze)   │
+│  - 30+ components                          │
 │  - Custom SVG charts                       │
+│  - Port: 3000                              │
 └────────────────────────────────────────────┘
                     │
-                    │ REST API (21 endpoints)
+                    │ REST API (30+ endpoints)
+                    │ WebSocket (HFT trading)
                     │
 ┌────────────────────────────────────────────┐
 │          FastAPI Backend                   │
@@ -83,6 +92,9 @@
 │  - Outlier detection                       │
 │  - News & sentiment                        │
 │  - User management                         │
+│  - HFT trading engine                      │
+│  - Portfolio management                    │
+│  - Port: 8000                              │
 └────────────────────────────────────────────┘
                     │
                     │
@@ -91,8 +103,13 @@
 │  - User data                               │
 │  - Predictions                             │
 │  - Market data cache                       │
+│  - Performance metrics                     │
 └────────────────────────────────────────────┘
 ```
+
+**📖 For detailed architecture documentation with file references and communication flows, see:**
+- **[SYSTEM_ARCHITECTURE_FLOWCHART.md](SYSTEM_ARCHITECTURE_FLOWCHART.md)** - Complete architecture guide
+- **[SYSTEM_ARCHITECTURE_FLOWCHART.html](SYSTEM_ARCHITECTURE_FLOWCHART.html)** - Interactive HTML visualization
 
 ---
 
@@ -177,11 +194,12 @@ pnpm test:e2e:ui          # Interactive UI mode
 | Document | Description |
 |----------|-------------|
 | [PLAN.md](PLAN.md) | Complete project roadmap (602 lines) |
-| [STATUS.md](STATUS.md) | Current project status & metrics |
-| [DEVELOPMENT.md](DEVELOPMENT.md) | Development setup guide |
-| [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) | Production deployment steps |
-| [READY_TO_DEPLOY.md](READY_TO_DEPLOY.md) | Deployment checklist |
-| [GOOGLE_OAUTH_SETUP.md](GOOGLE_OAUTH_SETUP.md) | OAuth configuration |
+| [SYSTEM_ARCHITECTURE_FLOWCHART.md](SYSTEM_ARCHITECTURE_FLOWCHART.md) | **NEW** - Complete system architecture with file references |
+| [SYSTEM_ARCHITECTURE_FLOWCHART.html](SYSTEM_ARCHITECTURE_FLOWCHART.html) | **NEW** - Interactive HTML flowchart visualization |
+| [CHANGELOG.md](CHANGELOG.md) | Version history and changes |
+| [FAQ.md](FAQ.md) | Frequently asked questions |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Contribution guidelines |
+| [API_TESTING_RESULTS.md](API_TESTING_RESULTS.md) | API endpoint testing results |
 
 ---
 
@@ -214,28 +232,66 @@ pnpm test:e2e:ui          # Interactive UI mode
 
 ## 🌐 API Endpoints
 
-### Predictions (`/api/predictions`)
-- `GET /api/predictions/{ticker}` - Get ML predictions
-- `GET /api/predictions/info/{ticker}` - Get ticker info
-- `POST /api/predictions/train` - Train new model
+### Predictions (`/api/v1/predictions`)
+- `GET /api/v1/predictions/{ticker}` - Get ML predictions
+- `GET /api/v1/predictions/info/{ticker}` - Get ticker info
+- `GET /api/v1/predictions/search` - Search tickers
 
-### Outliers (`/api/outliers`)
-- `GET /api/outliers/{strategy}` - Get outlier data
-- `GET /api/outliers/strategies` - List available strategies
-- `POST /api/outliers/refresh` - Refresh outlier cache
-- `GET /api/outliers/cache/{strategy}` - Get cached data
+### Market Data (`/api/v1/market`)
+- `GET /api/v1/market/outliers/{strategy}` - Get outlier stocks
+- `GET /api/v1/market/performance/{strategy}` - Get performance metrics
+- `GET /api/v1/{ticker}/historical` - Historical price data
 
-### News (`/api/news`)
-- `GET /api/news/{ticker}` - Get ticker news
-- `GET /api/news/{ticker}/sentiment` - Get sentiment analysis
+### Outliers (`/api/v1/outliers`)
+- `GET /api/v1/outliers/{strategy}` - Get outlier data
+- `GET /api/v1/outliers/strategies` - List available strategies
+- `POST /api/v1/outliers/{strategy}/refresh` - Refresh outlier cache
 
-### Users (`/api/users`)
-- `POST /api/users` - Create user
-- `GET /api/users/{user_id}` - Get user profile
-- `PUT /api/users/{user_id}/preferences` - Update preferences
-- `GET /api/users/{user_id}/watchlist` - Get watchlist
-- `POST /api/users/{user_id}/watchlist` - Add to watchlist
-- `GET /api/users/{user_id}/alerts` - Get alerts
+### News (`/api/v1/news`)
+- `GET /api/v1/news/{ticker}` - Get ticker news with sentiment
+- `GET /api/v1/nasdaq-news/latest` - Latest NASDAQ news
+- `GET /api/v1/nasdaq-news/urgent` - Urgent news alerts
+
+### Trading (`/api/v1/trading`)
+- `GET /api/v1/trading/status` - Trading account status
+- `POST /api/v1/trading/execute` - Execute trade
+- `GET /api/v1/trading/positions` - Current positions
+- `POST /api/v1/trading/quote/{symbol}` - Real-time quote
+- `GET /api/v1/trading/orders` - Order history
+
+### HFT (`/api/v1/hft`)
+- `GET /api/v1/hft/status` - HFT engine status
+- `POST /api/v1/hft/start` - Start HFT engine
+- `POST /api/v1/hft/stop` - Stop HFT engine
+- `POST /api/v1/hft/orders` - Submit HFT order
+- `GET /api/v1/hft/performance` - Performance metrics
+
+### Portfolio (`/api/v1/portfolio`)
+- `POST /api/v1/portfolio/calculate-metrics` - Calculate portfolio metrics
+- `GET /api/v1/portfolio/risk-analysis/{ticker}` - Risk analysis
+- `POST /api/v1/portfolio/calculate-allocation` - Optimal allocation
+
+### Valuation (`/api/v1/valuation`)
+- `GET /api/v1/valuation/{ticker}` - Stock valuation
+- `GET /api/v1/valuation/{ticker}/fair-value` - Black-Scholes fair value
+
+### Users (`/api/v1/users`)
+- `POST /api/v1/users/` - Create user
+- `GET /api/v1/users/{user_id}` - Get user profile
+- `PUT /api/v1/users/{user_id}/preferences` - Update preferences
+- `GET /api/v1/users/{user_id}/watchlist` - Get watchlist
+- `POST /api/v1/users/{user_id}/watchlist` - Add to watchlist
+
+### Behavioral (`/api/v1/behavioral`)
+- `POST /api/v1/behavioral/rationale` - Add trade rationale
+- `GET /api/v1/behavioral/insights` - Behavioral insights
+- `GET /api/v1/behavioral/performance-analysis` - Performance analysis
+
+### Capitulation (`/api/v1/capitulation`)
+- `GET /api/v1/capitulation/screen` - Screen for capitulation
+- `GET /api/v1/capitulation/analyze/{symbol}` - Analyze stock
+
+**📖 See [SYSTEM_ARCHITECTURE_FLOWCHART.md](SYSTEM_ARCHITECTURE_FLOWCHART.md) for detailed endpoint documentation with file references.**
 
 ---
 
@@ -293,14 +349,17 @@ Billions/
 
 ## 🎯 Key Statistics
 
-- **Files Created**: 150+ files
-- **Lines of Code**: 7,500+ lines
-- **Documentation**: 5,000+ lines
-- **API Endpoints**: 21 endpoints
-- **Frontend Pages**: 5 pages
-- **Components**: 20+ components
+- **Files Created**: 200+ files
+- **Lines of Code**: 10,000+ lines
+- **Documentation**: 8,000+ lines
+- **API Endpoints**: 30+ endpoints
+- **Frontend Pages**: 8+ pages
+- **Components**: 30+ components
+- **Backend Routers**: 13 routers
+- **Backend Services**: 12 services
 - **Tests**: 89 tests passing
 - **Test Coverage**: 85% (backend)
+- **Architecture Docs**: Complete flowchart with file references
 
 ---
 

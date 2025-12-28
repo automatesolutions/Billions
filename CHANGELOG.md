@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added - Latest Updates (2025)
+- **System Architecture Documentation** - Complete flowchart documentation with file references
+  - `SYSTEM_ARCHITECTURE_FLOWCHART.md` - Comprehensive architecture guide
+  - `SYSTEM_ARCHITECTURE_FLOWCHART.html` - Interactive HTML visualization
+- **Enhanced API Documentation** - 30+ endpoints fully documented with file paths
+- **Communication Flow Diagrams** - Detailed frontend ↔ backend communication flows
+- **File Structure Mapping** - Complete file organization guide
+- **Architecture Visualization** - Interactive HTML flowchart with tabs for:
+  - Overview (visual architecture diagram)
+  - Communication Flows (6 detailed flow examples)
+  - API Endpoints (all endpoints with file references)
+  - File Structure (complete file organization)
+
 ### Planned Features
 - Cryptocurrency prediction support
 - Real-time WebSocket data feeds
