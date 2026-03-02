@@ -17,6 +17,91 @@
 
 ---
 
+## 📖 What is BILLIONS?
+
+**BILLIONS** is an end-to-end **Machine Learning–powered stock forecasting and market intelligence platform**. It combines deep learning (LSTM neural networks), probabilistic modeling (Markov chains), statistical outlier detection, sentiment analysis, and capitulation screening to help traders and investors:
+
+- **Forecast** stock prices 30 days ahead with confidence bands
+- **Identify outliers** — stocks with unusual price/volume behavior across scalp, swing, and long-term horizons
+- **Screen for capitulation** — market panic or exhaustion signals
+- **Track sentiment** — real-time news sentiment and its impact on predictions
+
+The system uses a **hybrid LSTM + Markov Chain** approach: LSTM captures sequential trends, while Markov chains model price-state transitions. Predictions are optionally adjusted by news sentiment and presented with uncertainty bounds.
+
+---
+
+## 🔬 Methodology Overview
+
+### 1. **Hybrid Stock Prediction (LSTM + Markov Chain)**
+
+We use a **hybrid approach** that combines two complementary models:
+
+| Component | Role | Weight |
+|-----------|------|--------|
+| **LSTM** | Captures sequential price trends, momentum, and technical patterns | 60% |
+| **Markov Chain** | Models discrete price-state transitions and pattern probabilities | 40% |
+
+**Fallback:** If both models fail (e.g., insufficient data or missing model file), a simple trend-based prediction is used (20-day momentum + volatility).
+
+#### LSTM Model Architecture
+- **Type:** Bidirectional LSTM with multi-head attention
+- **Structure:** 3 layers, 100 hidden units, 20% dropout
+- **Input:** 60-day sequences of 14 engineered features
+- **Output:** 30-day price forecasts
+- **Features:** Close, Volume, Price_Change, Log_Returns, Momentum (10/20), Volume_Ratio_20, Price_to_SMA20, SMA20_Slope, RSI_14, MACD, MACD_Signal, BB_Position, Sector_Alpha
+
+#### Markov Chain Predictor
+- **States:** 20 discrete price states (percentile-based discretization)
+- **Smoothing:** Laplace smoothing (0.1) to avoid zero probabilities
+- **Output:** Point predictions + uncertainty bounds from state probability distribution
+
+#### Sentiment Adjustment
+- News sentiment (from AI or TextBlob) is used to nudge predictions when |sentiment| > 0.1
+- Multiplier: `1 + (sentiment × 0.03)` — up to ±3% adjustment
+
+---
+
+### 2. **Outlier Detection (Z-Score Strategy)**
+
+We identify **outlier stocks** — those with unusual price/volume behavior — using two normalized metrics and Z-scores:
+
+| Strategy | X-Axis (Lookback) | Y-Axis (Lookback) | Min Market Cap | Use Case |
+|----------|-------------------|-------------------|----------------|----------|
+| **Scalp** | 1 week | 1 day | $1B | Short-term momentum |
+| **Swing** | 1 month | 1 week | $2B | Medium-term swings |
+| **Long-term** | 6 months | 1 month | $10B | Long-term trends |
+
+**Method:**
+- `metric_x` = % price change over X lookback
+- `metric_y` = % price change over Y lookback  
+- Z-scores computed across all tickers for both metrics
+- **Outlier:** `|z_x| > 2` OR `|z_y| > 2`
+
+Data: NASDAQ tickers (Alpha Vantage), filtered by volume (≥1M) and market cap, with price history from Yahoo Finance.
+
+---
+
+### 3. **Capitulation Detection**
+
+Capitulation signals (panic selling or exhaustion) are detected using technical indicators:
+
+- **RSI** (oversold < 30)
+- **Volume spikes** (elevated selling volume)
+- **Price drops** (significant drawdowns)
+- **Volatility expansion**
+
+Stocks are scored (0–10+). Score **≥ 3** indicates capitulation. Enhanced detector uses a broader NASDAQ universe and additional signals.
+
+---
+
+### 4. **Technical Analysis & Feature Engineering**
+
+- **20+ indicators:** RSI, MACD, Bollinger Bands, momentum, volume ratios, realized volatility
+- **Sector alpha:** Relative performance vs sector ETF (XLK, XLF, XLV, etc.)
+- **Enhanced features:** Jump component in volatility, weighted momentum, volume-price trend
+
+---
+
 ## 📊 Project Status
 
 **Current Version**: v2.0 Web App (Phases 1-5 Complete)  
@@ -193,9 +278,10 @@ pnpm test:e2e:ui          # Interactive UI mode
 
 | Document | Description |
 |----------|-------------|
+| [README.html](README.html) | **HTML version** — Polished web view of this README |
 | [PLAN.md](PLAN.md) | Complete project roadmap (602 lines) |
-| [SYSTEM_ARCHITECTURE_FLOWCHART.md](SYSTEM_ARCHITECTURE_FLOWCHART.md) | **NEW** - Complete system architecture with file references |
-| [SYSTEM_ARCHITECTURE_FLOWCHART.html](SYSTEM_ARCHITECTURE_FLOWCHART.html) | **NEW** - Interactive HTML flowchart visualization |
+| [SYSTEM_ARCHITECTURE_FLOWCHART.md](SYSTEM_ARCHITECTURE_FLOWCHART.md) | Complete system architecture with file references |
+| [SYSTEM_ARCHITECTURE_FLOWCHART.html](SYSTEM_ARCHITECTURE_FLOWCHART.html) | Interactive HTML flowchart visualization |
 | [CHANGELOG.md](CHANGELOG.md) | Version history and changes |
 | [FAQ.md](FAQ.md) | Frequently asked questions |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Contribution guidelines |
