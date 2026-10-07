@@ -1,37 +1,34 @@
 """
-Database configuration and session management
-Reuses existing SQLAlchemy models from db/
+Database engine and session handling.
+
+SQLite by default (a cache of computed outlier metrics). Set DATABASE_URL to
+use PostgreSQL later; nothing here is SQLite-specific apart from connect_args.
 """
 
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, Session
-from typing import Generator
-import sys
 from pathlib import Path
+from typing import Generator
 
-# Add parent directory to Python path to import db module
-parent_dir = Path(__file__).parent.parent
-sys.path.insert(0, str(parent_dir))
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session, declarative_base, sessionmaker
 
-from db.core import Base, engine as existing_engine, SessionLocal as ExistingSession
-from db.models import PerfMetric
-from db.models_auth import User, UserPreference, Watchlist, Alert
 from api.config import settings
 
-# Use the existing engine and session from db/core.py
-engine = existing_engine
-SessionLocal = ExistingSession
+_is_sqlite = settings.DATABASE_URL.startswith("sqlite")
+
+if _is_sqlite:
+    db_file = settings.DATABASE_URL.replace("sqlite:///", "", 1)
+    if db_file and db_file != ":memory:":
+        Path(db_file).parent.mkdir(parents=True, exist_ok=True)
+
+engine = create_engine(
+    settings.DATABASE_URL,
+    connect_args={"check_same_thread": False} if _is_sqlite else {},
+)
+SessionLocal = sessionmaker(bind=engine, expire_on_commit=False)
+Base = declarative_base()
 
 
 def get_db() -> Generator[Session, None, None]:
-    """
-    Dependency for FastAPI endpoints to get database session
-    
-    Usage:
-        @app.get("/items")
-        async def get_items(db: Session = Depends(get_db)):
-            ...
-    """
     db = SessionLocal()
     try:
         yield db
@@ -39,7 +36,7 @@ def get_db() -> Generator[Session, None, None]:
         db.close()
 
 
-def init_db():
-    """Initialize database tables"""
-    Base.metadata.create_all(bind=engine)
+def init_db() -> None:
+    from api import models  # noqa: F401  (registers tables)
 
+    Base.metadata.create_all(bind=engine)

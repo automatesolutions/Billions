@@ -15,7 +15,7 @@ describe('TickerSearch Component', () => {
   it('renders search input and button', () => {
     render(<TickerSearch />);
     
-    expect(screen.getByPlaceholderText(/Enter ticker/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/Ticker, e.g./i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Analyze/i })).toBeInTheDocument();
   });
 
@@ -23,7 +23,7 @@ describe('TickerSearch Component', () => {
     const user = userEvent.setup();
     render(<TickerSearch />);
     
-    const input = screen.getByPlaceholderText(/Enter ticker/i) as HTMLInputElement;
+    const input = screen.getByPlaceholderText(/Ticker, e.g./i) as HTMLInputElement;
     await user.type(input, 'TSLA');
     
     expect(input.value).toBe('TSLA');
@@ -33,23 +33,23 @@ describe('TickerSearch Component', () => {
     const user = userEvent.setup();
     render(<TickerSearch />);
     
-    const input = screen.getByPlaceholderText(/Enter ticker/i);
+    const input = screen.getByPlaceholderText(/Ticker, e.g./i);
     const button = screen.getByRole('button', { name: /Analyze/i });
     
     await user.type(input, 'aapl');
     await user.click(button);
     
-    expect(mockPush).toHaveBeenCalledWith('/analyze/AAPL');
+    expect(mockPush).toHaveBeenCalledWith('/analysis/AAPL');
   });
 
   it('converts ticker to uppercase', async () => {
     const user = userEvent.setup();
     render(<TickerSearch />);
     
-    const input = screen.getByPlaceholderText(/Enter ticker/i);
+    const input = screen.getByPlaceholderText(/Ticker, e.g./i);
     await user.type(input, 'tsla{Enter}');
     
-    expect(mockPush).toHaveBeenCalledWith('/analyze/TSLA');
+    expect(mockPush).toHaveBeenCalledWith('/analysis/TSLA');
   });
 
   it('does not navigate with empty ticker', async () => {

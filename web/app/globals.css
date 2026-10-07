@@ -1,121 +1,274 @@
+/*
+ * BILLIONS design tokens. Single source: web/DESIGN.md (Ferrari-based).
+ * Components use these utilities only. No hex values outside this file.
+ */
 @import "tailwindcss";
 
-@custom-variant dark (&:is(.dark *));
+@theme {
+  /* Reset Tailwind defaults so only Ferrari tokens exist */
+  --color-*: initial;
+  --spacing: initial;
+  --radius-*: initial;
+  --shadow-*: initial;
+  --text-*: initial;
+  --font-*: initial;
+  --container-*: initial;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
-  --color-ring: var(--ring);
-  --color-input: var(--input);
-  --color-border: var(--border);
-  --color-destructive: var(--destructive);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-accent: var(--accent);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-secondary: var(--secondary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary: var(--primary);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-popover: var(--popover);
-  --color-card-foreground: var(--card-foreground);
-  --color-card: var(--card);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-}
+  /* Color (DESIGN.md: colors + BILLIONS adaptations) */
+  --color-canvas: #181818;
+  --color-elevated: #303030;
+  --color-ink: #ffffff;
+  --color-body: #969696;
+  --color-muted: #666666;
+  --color-hairline: #303030;
+  --color-primary: #da291c;
+  --color-primary-active: #b01e0a;
+  --color-primary-deep: #a00c01;
+  --color-black: #030303;
+  --color-steel: #3c3c3c;
+  --color-on-primary: #ffffff;
+  --color-up: #2fb36d;
+  --color-down: #ff6b5e;
+  --color-info: #4c98b9;
+  --color-focus: #f6e500;
+  --color-transparent: transparent;
+  --color-current: currentColor;
 
-:root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
-}
+  /* Spacing: Ferrari 8px ladder only */
+  --spacing-0: 0px;
+  --spacing-px: 1px;
+  --spacing-xxxs: 4px;
+  --spacing-xxs: 8px;
+  --spacing-xs: 16px;
+  --spacing-sm: 24px;
+  --spacing-md: 32px;
+  --spacing-lg: 48px;
+  --spacing-xl: 64px;
+  --spacing-xxl: 96px;
+  --spacing-super: 128px;
 
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  /* Component sizes (not spacing) */
+  --spacing-chart: 360px;
+  --spacing-nav: 64px;
+  --spacing-hero: 720px;
+
+  /* Radius: sharp by default */
+  --radius-none: 0px;
+  --radius-sm: 4px;
+  --radius-full: 9999px;
+
+  /* Type */
+  --font-sans: var(--font-general-sans), -apple-system, system-ui, sans-serif;
+
+  --text-display-mega: 80px;
+  --text-display-mega--line-height: 1.05;
+  --text-display-mega--letter-spacing: -1.6px;
+  --text-display-mega--font-weight: 500;
+  --text-display-xl: 56px;
+  --text-display-xl--line-height: 1.1;
+  --text-display-xl--letter-spacing: -1.12px;
+  --text-display-xl--font-weight: 500;
+  --text-display-lg: 36px;
+  --text-display-lg--line-height: 1.2;
+  --text-display-lg--letter-spacing: -0.36px;
+  --text-display-lg--font-weight: 500;
+  --text-display-md: 26px;
+  --text-display-md--line-height: 1.5;
+  --text-display-md--letter-spacing: 0.195px;
+  --text-display-md--font-weight: 500;
+  --text-title-md: 18px;
+  --text-title-md--line-height: 1.2;
+  --text-title-md--font-weight: 700;
+  --text-title-sm: 16px;
+  --text-title-sm--line-height: 1.4;
+  --text-title-sm--letter-spacing: 0.08px;
+  --text-title-sm--font-weight: 500;
+  --text-body-md: 14px;
+  --text-body-md--line-height: 1.5;
+  --text-body-sm: 13px;
+  --text-body-sm--line-height: 1.5;
+  --text-caption: 12px;
+  --text-caption--line-height: 1.4;
+  --text-caption-upper: 11px;
+  --text-caption-upper--line-height: 1.4;
+  --text-caption-upper--letter-spacing: 1.1px;
+  --text-caption-upper--font-weight: 600;
+  --text-button: 14px;
+  --text-button--line-height: 1;
+  --text-button--letter-spacing: 1.4px;
+  --text-button--font-weight: 700;
+  --text-nav: 13px;
+  --text-nav--line-height: 1.4;
+  --text-nav--letter-spacing: 0.65px;
+  --text-nav--font-weight: 600;
+  --text-number-lg: 48px;
+  --text-number-lg--line-height: 1;
+  --text-number-lg--letter-spacing: -0.96px;
+  --text-number-lg--font-weight: 500;
+  --text-number-xl: 80px;
+  --text-number-xl--line-height: 1;
+  --text-number-xl--letter-spacing: -1.6px;
+  --text-number-xl--font-weight: 700;
+
+  --tracking-brand: 0.3em;
+
+  /* Layout */
+  --container-content: 1280px;
+  --container-prose: 680px;
+  --container-search: 224px;
+  --container-table: 560px;
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
+  html {
+    background-color: var(--color-canvas);
+    color-scheme: dark;
+    scroll-behavior: smooth;
+    scroll-padding-top: calc(var(--spacing-nav) + var(--spacing-xs));
+    -webkit-text-size-adjust: 100%;
   }
+
   body {
-    @apply bg-background text-foreground;
+    background-color: var(--color-canvas);
+    color: var(--color-body);
+    font-family: var(--font-sans);
+    font-size: var(--text-body-md);
+    line-height: var(--text-body-md--line-height);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  :where(h1, h2, h3, h4) {
+    color: var(--color-ink);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background-color: var(--color-primary);
+    color: var(--color-on-primary);
+  }
+}
+
+@utility tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Decorative depth (DESIGN.md "Decorative Depth") ---------- */
+
+/* Rosso Corsa gradient: livery bands and primary CTA hover. */
+@utility bg-livery {
+  background-image: linear-gradient(180deg, var(--color-primary-deep), var(--color-primary) 64%);
+}
+
+/* Atmospheric darken used at section transitions. */
+@utility bg-cinema {
+  background-image: linear-gradient(180deg, var(--color-steel), var(--color-black) 64%);
+}
+
+/* Breaks out of the 1280px content column to the full viewport width. */
+@utility full-bleed {
+  width: 100vw;
+  margin-inline: calc(50% - 50vw);
+}
+
+/* Short Rosso Corsa racing stripe that sits above section eyebrows. */
+@utility stripe {
+  display: block;
+  width: var(--spacing-md);
+  height: 2px;
+  background-color: var(--color-primary);
+}
+
+/* Faint 64px grid, like a timing screen. Decorative only. */
+@utility bg-grid {
+  background-image:
+    linear-gradient(to right, color-mix(in srgb, var(--color-ink) 4%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in srgb, var(--color-ink) 4%, transparent) 1px, transparent 1px);
+  background-size: var(--spacing-xl) var(--spacing-xl);
+}
+
+/* Header glass over the canvas. */
+@utility glass {
+  background-color: color-mix(in srgb, var(--color-canvas) 82%, transparent);
+  backdrop-filter: saturate(140%) blur(16px);
+  -webkit-backdrop-filter: saturate(140%) blur(16px);
+}
+
+/* Light sweep across a CTA on hover. */
+@utility sheen {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(110deg, transparent 30%, color-mix(in srgb, var(--color-ink) 22%, transparent) 50%, transparent 70%);
+    transform: translateX(-120%);
+    transition: transform 0.7s var(--ease-out);
+  }
+  &:hover::after {
+    transform: translateX(120%);
+  }
+}
+
+@utility skeleton {
+  background-color: var(--color-elevated);
+  animation: skeleton-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes skeleton-pulse {
+  50% {
+    opacity: 0.55;
+  }
+}
+
+/* Slow drift for the hero light streaks. */
+@utility streak {
+  animation: streak-drift 9s ease-in-out infinite alternate;
+}
+
+@keyframes streak-drift {
+  from {
+    transform: translateX(-4%) skewX(-24deg);
+    opacity: 0.55;
+  }
+  to {
+    transform: translateX(4%) skewX(-24deg);
+    opacity: 1;
+  }
+}
+
+/* Live dot pulse for "market open". */
+@utility pulse-dot {
+  animation: pulse-dot 2s ease-out infinite;
+}
+
+@keyframes pulse-dot {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-up) 60%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 8px transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

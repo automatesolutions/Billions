@@ -34,13 +34,3 @@ repos:
       - id: check-merge-conflict
       - id: detect-private-key
 
-  # Frontend linting
-  - repo: local
-    hooks:
-      - id: frontend-lint
-        name: Frontend ESLint
-        entry: bash -c 'cd web && pnpm lint'
-        language: system
-        files: ^web/.*\.(ts|tsx|js|jsx)$
-        pass_filenames: false
-

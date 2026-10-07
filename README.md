@@ -1,428 +1,126 @@
-# 🚀 BILLIONS - ML-Powered Stock Forecasting Platform
+# BILLIONS
 
-<div align="center">
+BILLIONS finds US stocks that are moving unusually far from the rest of the market. For each one, it shows a tested quant analysis: signal, edge, risk, and whether any of it beats chance.
 
-![BILLIONS Logo](web/public/logo.png)
+It is a read-only web app. **Information only. Not financial advice. This tool does not place trades.**
 
-**Advanced LSTM-based stock market forecasting and outlier detection**
+![Swing outliers on desktop](docs/screenshots/outliers-desktop.png)
 
-[![Next.js](https://img.shields.io/badge/Next.js-15.5-black)](https://nextjs.org/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.118-green)](https://fastapi.tiangolo.com/)
-[![Python](https://img.shields.io/badge/Python-3.12-blue)](https://www.python.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue)](https://www.typescriptlang.org/)
-[![Tests](https://img.shields.io/badge/Tests-89%20passing-brightgreen)](.)
-[![Coverage](https://img.shields.io/badge/Coverage-85%25-brightgreen)](.)
+| Outliers (phone) | Stock analysis (phone) |
+|---|---|
+| ![Outliers on a phone](docs/screenshots/outliers-mobile.png) | ![Stock analysis on a phone](docs/screenshots/analysis-mobile.png) |
 
-</div>
+Full analysis page: [docs/screenshots/analysis-desktop-full.png](docs/screenshots/analysis-desktop-full.png)
 
----
+## Pages
 
-## 📊 Project Status
+| URL | What it shows |
+|---|---|
+| `/` | Home page: a hero, the live board (top five swing outliers and scan stats), the three strategies, and a ticker lookup |
+| `/outliers/scalp`, `/outliers/swing`, `/outliers/longterm` | Every liquid NASDAQ stock on a scatter of two return windows, plus a ranked list of the ones more than 2 standard deviations from the group |
+| `/analysis/{TICKER}` | Signal, price and next-session forecast, out-of-sample edge, risk, model comparison, validation, cost check, and the limits of all of it |
+| `/methodology` | How every number is made, in plain words |
 
-**Current Version**: v2.0 Web App (Phases 1-5 Complete)  
-**Progress**: **71.9%** | 5.75/8 phases complete  
-**Status**: ✅ **MVP READY FOR DEPLOYMENT**
+The header on every page has a ticker search, so you can open any NASDAQ stock's analysis from anywhere.
 
-### Phase Completion
-- ✅ **Phase 0**: Foundation & Analysis (100%)
-- ✅ **Phase 1**: Infrastructure Setup (100%)
-- ✅ **Phase 2**: Testing Infrastructure (100%)
-- ✅ **Phase 3**: Authentication & User Management (100%)
-- ✅ **Phase 4**: ML Backend Migration (100%)
-- ✅ **Phase 5**: Frontend Development MVP (100%)
-- 🔄 **Phase 6**: Deployment & Monitoring (75%)
-- ⏳ **Phase 7**: Data Migration (0%)
-- ⏳ **Phase 8**: Launch (0%)
+Each page has its own URL, title and link preview, and works with the browser's back and forward buttons. The app can be installed to a phone's home screen (web app manifest and icons), and it shows an offline page without a connection.
 
-### Latest Updates (2025)
-- ✅ **System Architecture Documentation** - Complete flowchart with file references
-- ✅ **Interactive HTML Visualization** - Visual architecture explorer
-- ✅ **Enhanced API Documentation** - 30+ endpoints documented
-- ✅ **Communication Flow Diagrams** - Frontend ↔ Backend flows
-- ✅ **File Structure Mapping** - Complete file organization guide
+## How it works
 
----
+**Outliers.** The scan starts from about 4,000 NASDAQ common stocks (the free NASDAQ Trader symbol list). It keeps the 1,000 most traded by median dollar volume, then computes two trailing returns per strategy. A stock is an outlier when either return is more than 2 standard deviations from the group. The scan runs in the background: at startup, every 30 minutes while the market is open, and once after each close. The page checks for new data every 5 minutes.
 
-## ✨ Features
+**Analysis** follows the quant handbook in `docs/reference/`, using two years of daily closes:
 
-### 🤖 Machine Learning
-- **LSTM Neural Networks** - Multi-timeframe stock predictions
-- **Outlier Detection** - 3 strategies (scalp, swing, long-term)
-- **Sentiment Analysis** - Real-time news sentiment scoring
-- **Technical Analysis** - 20+ indicators and metrics
+- Log returns and lagged, sign, rolling-mean and weekday features. Every rolling window is shifted by one day, and a unit test proves that no feature uses data from the day it forecasts.
+- Four models: AR(1), XGBoost (depth 3), an online Passive-Aggressive learner, and a stacked blend with non-negative weights.
+- Validation: a 75/25 time-ordered split, expanding and rolling walk-forward, and a comparison with 1,000 random up/down strategies.
+- Headline numbers are out-of-sample. In-sample numbers are labeled as such.
+- Output is information only: direction, a bounded strength score, risk numbers and plain caveats. It never gives sizes, orders or buy/sell instructions.
 
-### 📈 Market Intelligence
-- **Stock Forecasting** - 30-day predictions with confidence bands
-- **Outlier Visualization** - Scatter plots for market anomalies
-- **News Aggregation** - Real-time market news and analysis
-- **Performance Metrics** - ROI, Sharpe ratio, volatility analysis
+Details: [`/methodology`](web/app/methodology/page.tsx) and [`docs/REFACTOR_PLAN.md`](docs/REFACTOR_PLAN.md).
 
-### 👤 User Features
-- **Google OAuth** - Secure authentication
-- **User Dashboards** - Personalized stock tracking
-- **Watchlists** - Save favorite tickers
-- **Alerts** - Price and prediction notifications
-- **Auto-refresh** - Real-time data updates (5-min intervals)
+## Data source and its limits
 
-### 🎨 User Interface
-- **Dark Mode** - CLI-inspired mysterious theme
-- **Custom Charts** - SVG-based prediction & scatter plots
-- **Mobile Responsive** - Works on all devices
-- **Toast Notifications** - Real-time user feedback
+- Prices come from **Yahoo Finance** through `yfinance`, an unofficial library. Data can be delayed, missing or wrong, and there is no service guarantee.
+- **No order book (level 2).** Order-book imbalance and mid-price are shown as "Not available with current data source". They are never estimated.
+- **Daily bars only.** The forecast horizon is one trading day.
+- Stocks with less than about a year of history get price and risk only, with a note that the models need more data.
 
----
+## Run it locally
 
-## 🏗️ Architecture
-
-```
-┌────────────────────────────────────────────┐
-│           Next.js Frontend                 │
-│  - 8+ pages (login, dashboard, analyze)   │
-│  - 30+ components                          │
-│  - Custom SVG charts                       │
-│  - Port: 3000                              │
-└────────────────────────────────────────────┘
-                    │
-                    │ REST API (30+ endpoints)
-                    │ WebSocket (HFT trading)
-                    │
-┌────────────────────────────────────────────┐
-│          FastAPI Backend                   │
-│  - ML predictions (LSTM)                   │
-│  - Outlier detection                       │
-│  - News & sentiment                        │
-│  - User management                         │
-│  - HFT trading engine                      │
-│  - Portfolio management                    │
-│  - Port: 8000                              │
-└────────────────────────────────────────────┘
-                    │
-                    │
-┌────────────────────────────────────────────┐
-│      SQLite Database                       │
-│  - User data                               │
-│  - Predictions                             │
-│  - Market data cache                       │
-│  - Performance metrics                     │
-└────────────────────────────────────────────┘
-```
-
-**📖 For detailed architecture documentation with file references and communication flows, see:**
-- **[SYSTEM_ARCHITECTURE_FLOWCHART.md](SYSTEM_ARCHITECTURE_FLOWCHART.md)** - Complete architecture guide
-- **[SYSTEM_ARCHITECTURE_FLOWCHART.html](SYSTEM_ARCHITECTURE_FLOWCHART.html)** - Interactive HTML visualization
-
----
-
-## 🚀 Quick Start
-
-### Prerequisites
-- **Python 3.12+**
-- **Node.js 20+**
-- **pnpm 9+**
-- **Google OAuth credentials**
-
-### 1. Clone Repository
-```bash
-git clone https://github.com/yourusername/billions.git
-cd billions
-```
-
-### 2. Backend Setup
-```bash
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-
-# Install dependencies
-pip install -r api/requirements.txt
-pip install -r api/requirements-dev.txt
-
-# Start backend
-python -m uvicorn api.main:app --reload
-# Backend runs at http://localhost:8000
-```
-
-### 3. Frontend Setup
-```bash
-cd web
-
-# Install dependencies
-pnpm install
-
-# Setup environment
-cp .env.example .env.local
-# Edit .env.local with your Google OAuth credentials
-
-# Start frontend
-pnpm dev
-# Frontend runs at http://localhost:3000
-```
-
-### 4. Setup Google OAuth
-See [GOOGLE_OAUTH_SETUP.md](GOOGLE_OAUTH_SETUP.md) for detailed instructions.
-
----
-
-## 🧪 Testing
+You need Node 20+, pnpm 9+ and Python 3.12+.
 
 ```bash
-# Backend tests (pytest)
-pytest                      # Run all backend tests
-pytest --cov               # With coverage report
-
-# Frontend tests (Vitest)
-cd web
-pnpm test                  # Run component tests
-pnpm test:watch           # Watch mode
-
-# E2E tests (Playwright)
-cd web
-pnpm test:e2e             # Run E2E tests
-pnpm test:e2e:ui          # Interactive UI mode
+pnpm install     # root dev tools
+pnpm setup       # web dependencies + Python venv in .venv
+pnpm dev         # API on http://localhost:8000, web on http://localhost:3000
 ```
 
-**Test Statistics:**
-- **89 total tests** ✅
-- **Backend**: 57 pytest tests (85% coverage)
-- **Frontend**: 20 component tests
-- **E2E**: 12 Playwright tests
+Or, with Docker: `docker compose up`.
 
----
+The first outlier scan takes about 2 minutes after the API starts. Until then, the page says there is no data yet.
 
-## 📚 Documentation
+## Environment variables
 
-| Document | Description |
-|----------|-------------|
-| [PLAN.md](PLAN.md) | Complete project roadmap (602 lines) |
-| [SYSTEM_ARCHITECTURE_FLOWCHART.md](SYSTEM_ARCHITECTURE_FLOWCHART.md) | **NEW** - Complete system architecture with file references |
-| [SYSTEM_ARCHITECTURE_FLOWCHART.html](SYSTEM_ARCHITECTURE_FLOWCHART.html) | **NEW** - Interactive HTML flowchart visualization |
-| [CHANGELOG.md](CHANGELOG.md) | Version history and changes |
-| [FAQ.md](FAQ.md) | Frequently asked questions |
-| [CONTRIBUTING.md](CONTRIBUTING.md) | Contribution guidelines |
-| [API_TESTING_RESULTS.md](API_TESTING_RESULTS.md) | API endpoint testing results |
+Backend (`.env` in the repo root; see [`.env.example`](.env.example)):
 
----
+| Name | Default | Purpose |
+|---|---|---|
+| `CORS_ORIGINS` | `http://localhost:3000,http://127.0.0.1:3000` | Allowed frontend origins, comma-separated |
+| `DATABASE_URL` | `sqlite:///./data/billions.db` | Outlier cache. A PostgreSQL URL also works. |
+| `OUTLIER_SCHEDULER` | `true` | Run the background outlier scan |
+| `REFRESH_INTERVAL_MINUTES` | `30` | Scan interval while the market is open |
+| `RATE_LIMIT_DEFAULT` / `RATE_LIMIT_ANALYSIS` | `120/minute` / `20/minute` | Per-IP limits |
+| `ALPHA_VANTAGE_API_KEY` | empty | Optional second source for the symbol list |
 
-## 🛠️ Tech Stack
+Frontend (`web/.env.local`; see [`web/.env.example`](web/.env.example)):
 
-### Frontend
-- **Framework**: Next.js 15.5.4 (App Router)
-- **Language**: TypeScript 5.9
-- **Styling**: Tailwind CSS v4
-- **Components**: shadcn/ui
-- **Auth**: NextAuth.js
-- **Testing**: Vitest + Playwright
+| Name | Purpose |
+|---|---|
+| `NEXT_PUBLIC_API_URL` | Backend URL as the browser sees it |
+| `API_URL` | Optional backend URL for the Next.js server (defaults to the above) |
+| `NEXT_PUBLIC_SITE_URL` | Public site URL, for canonical links and link previews |
 
-### Backend
-- **Framework**: FastAPI 0.118
-- **Language**: Python 3.12
-- **ORM**: SQLAlchemy 2.0
-- **ML**: PyTorch 2.4, TensorFlow 2.19
-- **Testing**: pytest 8.4
-- **Coverage**: 85%
+## Tests and checks
 
-### Infrastructure
-- **Database**: SQLite (MVP), PostgreSQL (future)
-- **CI/CD**: GitHub Actions
-- **Frontend Deploy**: Vercel (configured)
-- **Backend Deploy**: Railway/Render (configured)
-- **Monitoring**: Sentry (ready to integrate)
-
----
-
-## 🌐 API Endpoints
-
-### Predictions (`/api/v1/predictions`)
-- `GET /api/v1/predictions/{ticker}` - Get ML predictions
-- `GET /api/v1/predictions/info/{ticker}` - Get ticker info
-- `GET /api/v1/predictions/search` - Search tickers
-
-### Market Data (`/api/v1/market`)
-- `GET /api/v1/market/outliers/{strategy}` - Get outlier stocks
-- `GET /api/v1/market/performance/{strategy}` - Get performance metrics
-- `GET /api/v1/{ticker}/historical` - Historical price data
-
-### Outliers (`/api/v1/outliers`)
-- `GET /api/v1/outliers/{strategy}` - Get outlier data
-- `GET /api/v1/outliers/strategies` - List available strategies
-- `POST /api/v1/outliers/{strategy}/refresh` - Refresh outlier cache
-
-### News (`/api/v1/news`)
-- `GET /api/v1/news/{ticker}` - Get ticker news with sentiment
-- `GET /api/v1/nasdaq-news/latest` - Latest NASDAQ news
-- `GET /api/v1/nasdaq-news/urgent` - Urgent news alerts
-
-### Trading (`/api/v1/trading`)
-- `GET /api/v1/trading/status` - Trading account status
-- `POST /api/v1/trading/execute` - Execute trade
-- `GET /api/v1/trading/positions` - Current positions
-- `POST /api/v1/trading/quote/{symbol}` - Real-time quote
-- `GET /api/v1/trading/orders` - Order history
-
-### HFT (`/api/v1/hft`)
-- `GET /api/v1/hft/status` - HFT engine status
-- `POST /api/v1/hft/start` - Start HFT engine
-- `POST /api/v1/hft/stop` - Stop HFT engine
-- `POST /api/v1/hft/orders` - Submit HFT order
-- `GET /api/v1/hft/performance` - Performance metrics
-
-### Portfolio (`/api/v1/portfolio`)
-- `POST /api/v1/portfolio/calculate-metrics` - Calculate portfolio metrics
-- `GET /api/v1/portfolio/risk-analysis/{ticker}` - Risk analysis
-- `POST /api/v1/portfolio/calculate-allocation` - Optimal allocation
-
-### Valuation (`/api/v1/valuation`)
-- `GET /api/v1/valuation/{ticker}` - Stock valuation
-- `GET /api/v1/valuation/{ticker}/fair-value` - Black-Scholes fair value
-
-### Users (`/api/v1/users`)
-- `POST /api/v1/users/` - Create user
-- `GET /api/v1/users/{user_id}` - Get user profile
-- `PUT /api/v1/users/{user_id}/preferences` - Update preferences
-- `GET /api/v1/users/{user_id}/watchlist` - Get watchlist
-- `POST /api/v1/users/{user_id}/watchlist` - Add to watchlist
-
-### Behavioral (`/api/v1/behavioral`)
-- `POST /api/v1/behavioral/rationale` - Add trade rationale
-- `GET /api/v1/behavioral/insights` - Behavioral insights
-- `GET /api/v1/behavioral/performance-analysis` - Performance analysis
-
-### Capitulation (`/api/v1/capitulation`)
-- `GET /api/v1/capitulation/screen` - Screen for capitulation
-- `GET /api/v1/capitulation/analyze/{symbol}` - Analyze stock
-
-**📖 See [SYSTEM_ARCHITECTURE_FLOWCHART.md](SYSTEM_ARCHITECTURE_FLOWCHART.md) for detailed endpoint documentation with file references.**
-
----
-
-## 📁 Project Structure
-
-```
-Billions/
-├── web/                     # Next.js Frontend
-│   ├── app/                # Pages (App Router)
-│   │   ├── login/         # Authentication
-│   │   ├── dashboard/     # User dashboard
-│   │   ├── analyze/       # Stock analysis
-│   │   └── outliers/      # Outlier detection
-│   ├── components/        # UI components
-│   │   ├── charts/        # Custom SVG charts
-│   │   ├── ui/            # shadcn/ui components
-│   │   └── ...
-│   ├── hooks/             # Custom React hooks
-│   ├── lib/               # API client & utilities
-│   ├── __tests__/         # Component tests (20)
-│   └── e2e/               # E2E tests (12)
-│
-├── api/                   # FastAPI Backend
-│   ├── routers/           # API routes
-│   │   ├── predictions.py
-│   │   ├── outliers.py
-│   │   ├── news.py
-│   │   └── users.py
-│   ├── services/          # Business logic
-│   ├── tests/             # Backend tests (57)
-│   └── main.py            # FastAPI app
-│
-├── db/                    # Database
-│   ├── models.py          # SQLAlchemy models
-│   └── models_auth.py     # User models
-│
-├── funda/                 # ML Models (legacy)
-│   ├── SPS.py             # News & sentiment
-│   ├── train_lstm_model.py
-│   └── outlier_engine.py
-│
-├── .github/
-│   └── workflows/         # CI/CD
-│       ├── test.yml       # Test pipeline
-│       ├── lint.yml       # Linting
-│       └── deploy.yml     # Deployment
-│
-├── vercel.json            # Vercel config
-├── railway.json           # Railway config
-├── render.yaml            # Render config
-└── docker-compose.yml     # Dev environment
+```bash
+pnpm test                        # pytest (70 tests) + vitest (15 tests)
+pnpm lint                        # flake8 + eslint
+pnpm --dir web typecheck
+pnpm --dir web test:e2e          # Playwright: outliers -> analysis, desktop and phone, against a mock API
 ```
 
----
+CI (`.github/workflows/ci.yml`) runs backend lint and tests, then frontend lint, types, tests and build, then the E2E suite.
 
-## 🎯 Key Statistics
+Lighthouse on the production build scores 95+ on mobile and 100 on desktop for Performance, Accessibility, Best Practices and SEO. See [`docs/lighthouse/README.md`](docs/lighthouse/README.md).
 
-- **Files Created**: 200+ files
-- **Lines of Code**: 10,000+ lines
-- **Documentation**: 8,000+ lines
-- **API Endpoints**: 30+ endpoints
-- **Frontend Pages**: 8+ pages
-- **Components**: 30+ components
-- **Backend Routers**: 13 routers
-- **Backend Services**: 12 services
-- **Tests**: 89 tests passing
-- **Test Coverage**: 85% (backend)
-- **Architecture Docs**: Complete flowchart with file references
+## Deploy
 
----
+**Backend: Railway or Render.** Both build [`api/Dockerfile`](api/Dockerfile) (about 860 MB image, about 170 MB of memory at rest).
 
-## 🚀 Deployment
+- *Railway:* create a project from this repo. `railway.json` selects the Dockerfile and the `/health` check. Set `CORS_ORIGINS` to your Vercel URL.
+- *Render:* create a Blueprint from [`render.yaml`](render.yaml), then set `CORS_ORIGINS`.
+- The SQLite cache lives on the container's disk. It is rebuilt by the first scan after each deploy.
 
-The application is **ready to deploy**! Configuration files are in place for:
+**Frontend: Vercel.** Import the repo, set **Root Directory** to `web`, and set `NEXT_PUBLIC_API_URL` (the backend URL) and `NEXT_PUBLIC_SITE_URL` (the Vercel URL). [`web/vercel.json`](web/vercel.json) pins the install and build commands.
 
-1. **Frontend (Vercel)** - `vercel.json` configured
-2. **Backend (Railway or Render)** - `railway.json` / `render.yaml` configured
-3. **CI/CD (GitHub Actions)** - Automated testing & deployment
+## Project structure
 
-**To deploy**, follow the step-by-step guide in [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md).
+```
+api/                 FastAPI backend
+  routers/           outliers.py, analysis.py
+  services/          outlier_engine.py, outliers.py (scheduler + read model), quant_analysis.py,
+                     analysis.py (cache), prices.py, universe.py, market_calendar.py
+  tests/             pytest suite
+web/                 Next.js app (App Router, TypeScript, Tailwind v4)
+  DESIGN.md          design system (Ferrari-based), showroom layer and copy rules
+  app/               home page, outliers/[strategy], analysis/[ticker], methodology, offline
+  components/        charts (hand-written SVG), analysis, home (hero art), ui, logo
+  e2e/               Playwright tests, mock API and recorded fixtures
+docs/                refactor plan, reference PDFs, screenshots, Lighthouse results
+scripts/             one-command dev helpers
+```
 
----
+## Licence
 
-## 🔒 Security
-
-- **Google OAuth** - Secure authentication via NextAuth.js
-- **JWT Sessions** - Stateless authentication
-- **CORS Protection** - Configured for production
-- **Environment Variables** - Secrets management
-- **Rate Limiting** - API throttling (future)
-- **SQL Injection Protection** - SQLAlchemy parameterized queries
-
----
-
-## 🤝 Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for development guidelines.
-
----
-
-## 📄 License
-
-See [LICENSE](LICENSE) for details.
-
----
-
-## 📞 Support
-
-For questions or issues:
-1. Check the [FAQ.md](FAQ.md)
-2. Review [DEVELOPMENT.md](DEVELOPMENT.md)
-3. Open a GitHub issue
-
----
-
-## 🎉 Acknowledgments
-
-Built with modern best practices:
-- Test-Driven Development (TDD)
-- Continuous Integration/Deployment (CI/CD)
-- Comprehensive documentation
-- Clean architecture
-
----
-
-<div align="center">
-
-**BILLIONS** - Machine Learning for Trading Intelligence
-
-Made with ❤️ and ☕
-
-[Website](#) | [Docs](PLAN.md) | [API Docs](http://localhost:8000/docs)
-
-</div>
+MIT. See [`LICENSE`](LICENSE). General Sans is used under the ITF Free Font License. It is downloaded from Fontshare at build time and not stored in this repository.
