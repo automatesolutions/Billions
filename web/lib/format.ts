@@ -50,3 +50,18 @@ export function weekdayTimeET(iso: string): string {
   );
   return `${text} ET`;
 }
+
+/** A log return or decimal as basis points, signed: 0.0019 -> "+19.0 bps". */
+export const bps = (decimal: number, digits = 1) => signed(decimal * 1e4, digits, ' bps');
+
+/** A decimal as a percent: 0.125 -> "12.5%" (unsigned) */
+export function percent(decimal: number | null | undefined, digits = 1): string {
+  if (decimal === null || decimal === undefined || !Number.isFinite(decimal)) return '—';
+  const v = decimal * 100;
+  return v < 0 ? `${MINUS}${Math.abs(v).toFixed(digits)}%` : `${v.toFixed(digits)}%`;
+}
+
+export function ratio(value: number | null | undefined, digits = 2): string {
+  if (value === null || value === undefined || !Number.isFinite(value)) return '—';
+  return plain(value, digits);
+}

@@ -105,6 +105,7 @@
   --container-content: 1280px;
   --container-prose: 680px;
   --container-search: 224px;
+  --container-table: 560px;
 
   /* Motion */
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);

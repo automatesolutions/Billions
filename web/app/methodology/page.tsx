@@ -104,13 +104,14 @@ export default function MethodologyPage() {
             (Passive-Aggressive), and a <strong>stacked</strong> model that blends the others with non-negative weights.
           </Term>
           <Term name="Signal strength">
-            The stacked forecast passed through tanh, after scaling by the forecast&apos;s own typical size. It runs from
-            −1 to +1. Values near zero mean the models have little to say.
+            The stacked forecast for the next day, divided by one tenth of the stock&apos;s typical daily move, then passed
+            through tanh. It runs from −1 to +1. A forecast worth a tenth of a normal day&apos;s move scores 0.76. Below 0.15
+            either way counts as neutral.
           </Term>
           <Term name="Cost check">
-            Each trade on a 1-day horizon pays a round-trip cost. The page compares the expected daily move with an assumed
-            cost (10 basis points by default, and you can change it). If the expected move is smaller than the cost, any
-            edge is eaten by trading costs.
+            Every trade pays a round-trip cost (spread plus fees). The page compares the average size of the stacked
+            forecast, per day, with an assumed cost of 10 basis points (0.10%). You can change the cost. If the forecast move
+            is smaller than the cost, any edge is used up by trading costs.
           </Term>
         </dl>
         <p>

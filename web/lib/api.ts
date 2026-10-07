@@ -2,7 +2,7 @@
  * Read-only client for the BILLIONS API. Works on the server and in the browser.
  */
 
-import type { OutliersResponse, Strategy } from '@/types/api';
+import type { AnalysisResponse, OutliersResponse, Strategy } from '@/types/api';
 
 /** Server-side code may use a private URL (API_URL); the browser uses the public one. */
 export const API_BASE_URL =
@@ -41,4 +41,8 @@ async function get<T>(path: string, init?: RequestInit & { next?: { revalidate?:
 
 export function getOutliers(strategy: Strategy, init?: Parameters<typeof get>[1]) {
   return get<OutliersResponse>(`/api/v1/outliers/${strategy}`, init);
+}
+
+export function getAnalysis(ticker: string, init?: Parameters<typeof get>[1]) {
+  return get<AnalysisResponse>(`/api/v1/analysis/${encodeURIComponent(ticker)}`, init);
 }
