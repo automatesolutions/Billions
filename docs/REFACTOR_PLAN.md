@@ -1,7 +1,7 @@
 # BILLIONS refactor plan: outliers only
 
 Branch: `refactor/outliers-only`
-Status: Phases 0–1 done. Decisions: all recommendations accepted (Q1–Q8).
+Status: Phases 0–4 done. Decisions: all recommendations accepted (Q1–Q8). Q7: no history rewrite was done, so the old Alpaca keys still need revoking.
 
 Goal: a public, read-only web app with three pages:
 

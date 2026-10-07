@@ -9,11 +9,14 @@ const META: Record<DirectionValue, { label: string; Icon: typeof IconMinus; colo
   neutral: { label: 'Neutral', Icon: IconMinus, color: 'text-body' },
 };
 
-/** Direction is always icon + word + color, never color alone. */
-export function Direction({ value, className }: { value: DirectionValue; className?: string }) {
+/**
+ * Direction is always icon + word + color, never color alone.
+ * `muted` drops the color (e.g. when the edge behind the direction is not significant).
+ */
+export function Direction({ value, className, muted = false }: { value: DirectionValue; className?: string; muted?: boolean }) {
   const { label, Icon, color } = META[value];
   return (
-    <span className={cn('inline-flex items-center gap-xxxs text-title-sm', color, className)}>
+    <span className={cn('inline-flex items-center gap-xxxs text-title-sm', muted ? 'text-ink' : color, className)}>
       <Icon aria-hidden size={18} stroke={1.75} />
       {label}
     </span>

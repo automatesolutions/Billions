@@ -46,3 +46,7 @@ next-env.d.ts
 
 # local helper scripts
 *.tmp.mjs
+
+# Playwright output
+/test-results/
+/playwright-report/

@@ -9,7 +9,12 @@
     "lint": "node scripts/run-py.mjs -m flake8 api && pnpm --dir web lint"
   },
   "devDependencies": {
-    "concurrently": "^9.2.1"
+    "concurrently": "^10.0.5"
   },
-  "packageManager": "pnpm@9.12.0"
+  "packageManager": "pnpm@9.12.0",
+  "pnpm": {
+    "overrides": {
+      "shell-quote@<1.11.0": "^1.11.0"
+    }
+  }
 }

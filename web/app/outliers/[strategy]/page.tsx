@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { pageOpenGraph } from '@/lib/metadata';
 import { notFound } from 'next/navigation';
 import { getOutliers } from '@/lib/api';
 import { STRATEGY_COPY } from '@/lib/strategies';
@@ -23,7 +24,7 @@ export async function generateMetadata({ params }: { params: Promise<{ strategy:
     title,
     description,
     alternates: { canonical: `/outliers/${strategy}` },
-    openGraph: { title, description, url: `/outliers/${strategy}` },
+    openGraph: pageOpenGraph(title, description, `/outliers/${strategy}`),
   };
 }
 

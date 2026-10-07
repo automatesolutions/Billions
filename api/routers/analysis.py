@@ -4,8 +4,10 @@ Per-stock analysis endpoint (read-only).
 
 import logging
 
-from fastapi import APIRouter, HTTPException, Response
+from fastapi import APIRouter, HTTPException, Request, Response
 
+from api.config import settings
+from api.limits import limiter
 from api.services import analysis as service
 from api.services.prices import normalize_ticker
 
@@ -14,7 +16,8 @@ router = APIRouter(prefix="/analysis", tags=["Analysis"])
 
 
 @router.get("/{ticker}")
-def get_analysis(ticker: str, response: Response):
+@limiter.limit(settings.RATE_LIMIT_ANALYSIS)
+def get_analysis(ticker: str, request: Request, response: Response):
     symbol = normalize_ticker(ticker)
     if symbol is None:
         raise HTTPException(

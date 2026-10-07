@@ -20,7 +20,9 @@ services:
     ports:
       - "3000:3000"
     environment:
+      # The browser reaches the API on the host port; the Next.js server reaches it by service name.
       - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - API_URL=http://api:8000
     volumes:
       - ./web:/app
       - /app/node_modules

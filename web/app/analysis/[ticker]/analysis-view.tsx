@@ -167,7 +167,7 @@ function SignalSummary({ data }: { data: AnalysisOk }) {
       <div className="grid gap-md lg:grid-cols-3">
         <div data-reveal className="flex flex-col gap-xs lg:col-span-2">
           <div className="flex flex-wrap items-center gap-xs">
-            <Direction value={signal.direction} className="text-display-md" />
+            <Direction value={signal.direction} className="text-display-md" muted={!baseline.beats_random} />
             <span className="text-title-sm text-body">
               {LEAN[signal.direction]} · {signal.label} ({ratio(signal.strength)})
             </span>

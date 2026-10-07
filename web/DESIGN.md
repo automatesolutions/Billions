@@ -584,7 +584,7 @@ Rules that follow from this:
 
 GSAP only, used sparingly:
 
-- Rows and cards fade and rise in (8px, 0.4s, `power2.out`, 0.03s stagger) on first load.
+- Rows and cards fade and rise in (8px, 0.4s, `power2.out`) on first load. The stagger is spread over 0.3s in total, and only elements visible in the first screen animate, so long lists cost nothing extra.
 - Key numbers count up from 0 (0.6s).
 
 Under `prefers-reduced-motion: reduce`, nothing animates: values appear in their final state. There are no hover animations (Ferrari: hover states are not documented).

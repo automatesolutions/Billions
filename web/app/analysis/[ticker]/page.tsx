@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { pageOpenGraph } from '@/lib/metadata';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
@@ -22,7 +23,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
     title,
     description,
     alternates: { canonical: `/analysis/${ticker}` },
-    openGraph: { title, description, url: `/analysis/${ticker}` },
+    openGraph: pageOpenGraph(title, description, `/analysis/${ticker}`),
   };
 }
 

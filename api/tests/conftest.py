@@ -6,6 +6,7 @@ import os
 
 os.environ.setdefault("DATABASE_URL", "sqlite:///:memory:")
 os.environ.setdefault("OUTLIER_SCHEDULER", "false")
+os.environ.setdefault("RATE_LIMIT_ENABLED", "false")
 
 import pytest  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
@@ -16,6 +17,7 @@ from sqlalchemy.pool import StaticPool  # noqa: E402
 from api import models  # noqa: E402,F401  (registers tables)
 from api.database import Base, get_db  # noqa: E402
 from api.main import app  # noqa: E402
+from api.services import outliers as outlier_service  # noqa: E402
 
 
 @pytest.fixture
@@ -32,6 +34,7 @@ def test_db():
             db.close()
 
     app.dependency_overrides[get_db] = override_get_db
+    outlier_service.clear_read_cache()
     yield TestingSessionLocal
     Base.metadata.drop_all(bind=engine)
     app.dependency_overrides.clear()

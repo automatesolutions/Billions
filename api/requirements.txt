@@ -16,7 +16,7 @@ requests>=2.31.0
 
 # Models (quant analysis)
 scikit-learn>=1.8.0
-xgboost>=2.0.0
+xgboost-cpu>=2.1.0  # CPU-only build: avoids ~300 MB of CUDA libraries
 
 # Storage
 SQLAlchemy>=2.0.0

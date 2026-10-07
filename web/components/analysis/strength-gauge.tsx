@@ -21,6 +21,7 @@ export function StrengthGauge({
     <div>
       <div
         role="meter"
+        aria-label="Signal strength"
         aria-valuemin={-1}
         aria-valuemax={1}
         aria-valuenow={Number(clamped.toFixed(2))}

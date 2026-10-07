@@ -22,8 +22,14 @@ export function useReveal(ref: RefObject<HTMLElement | null>, ready = true) {
     let cancelled = false;
     loadGsap().then((gsap) => {
       if (cancelled) return;
-      const targets = root.querySelectorAll('[data-reveal]');
-      gsap.from(targets, { y: 8, opacity: 0, duration: 0.4, ease: 'power2.out', stagger: 0.03, clearProps: 'all' });
+      // Only animate what is rendered and inside the first screen; the rest is already in place.
+      const targets = Array.from(root.querySelectorAll<HTMLElement>('[data-reveal]')).filter((el) => {
+        if (el.offsetParent === null) return false;
+        return el.getBoundingClientRect().top < window.innerHeight;
+      });
+      if (!targets.length) return;
+      // Total stagger is capped, so long lists finish within ~0.7s.
+      gsap.from(targets, { y: 8, opacity: 0, duration: 0.4, ease: 'power2.out', stagger: { amount: 0.3 }, clearProps: 'all' });
     });
     return () => {
       cancelled = true;

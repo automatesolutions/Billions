@@ -31,6 +31,11 @@ class Settings(BaseSettings):
     OUTLIER_SCHEDULER: bool = True
     REFRESH_INTERVAL_MINUTES: int = 30
 
+    # Per-IP rate limits (slowapi syntax). Analysis is compute-heavy, so it gets a lower limit.
+    RATE_LIMIT_ENABLED: bool = True
+    RATE_LIMIT_DEFAULT: str = "120/minute"
+    RATE_LIMIT_ANALYSIS: str = "20/minute"
+
     # Optional. Only used if set; the outlier universe works without it.
     ALPHA_VANTAGE_API_KEY: str = ""
 

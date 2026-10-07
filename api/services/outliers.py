@@ -95,7 +95,25 @@ def _iso(value: Optional[datetime]) -> Optional[str]:
     return value.isoformat()
 
 
+_read_cache: Dict[tuple, Dict] = {}
+
+
+def clear_read_cache() -> None:
+    _read_cache.clear()
+
+
 def get_outliers(db: Session, name: str) -> Dict:
+    """Read model for one strategy. The ranked part is cached until the stored data changes."""
+    version = db.query(func.count(PerfMetric.id), func.max(PerfMetric.inserted)).filter(PerfMetric.strategy == name).one()
+    key = (name, version[0], str(version[1]))
+    if key not in _read_cache:
+        if len(_read_cache) > 16:
+            _read_cache.clear()
+        _read_cache[key] = _build_outliers(db, name)
+    return {**_read_cache[key], "market": market_calendar.market_state(), "refresh": refresh_status()}
+
+
+def _build_outliers(db: Session, name: str) -> Dict:
     strategy = STRATEGIES[name]
     rows = db.query(PerfMetric).filter(PerfMetric.strategy == name).all()
 
@@ -123,8 +141,6 @@ def get_outliers(db: Session, name: str) -> Dict:
         **strategy_info(name),
         "as_of": first.price_date.isoformat() if first and first.price_date else None,
         "computed_at": _iso(first.inserted) if first else None,
-        "market": market_calendar.market_state(),
-        "refresh": refresh_status(),
         "universe_count": len(points),
         "outlier_count": len(outliers),
         "outliers": outliers,
