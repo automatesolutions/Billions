@@ -40,3 +40,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Fonts fetched at build time (licence forbids redistributing them in the repo)
+/app/fonts/*.woff2
+
+# local helper scripts
+*.tmp.mjs

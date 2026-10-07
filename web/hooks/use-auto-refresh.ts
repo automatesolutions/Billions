@@ -2,26 +2,39 @@
 
 import { useEffect, useRef } from 'react';
 
-export function useAutoRefresh(
-  callback: () => void,
-  interval: number = 60000, // 1 minute default
-  enabled: boolean = true
-) {
-  const savedCallback = useRef(callback);
+/**
+ * Calls `callback` every `interval` ms while `enabled`.
+ * With `pauseWhenHidden`, it skips ticks while the tab is hidden and runs once when it comes back.
+ */
+export function useAutoRefresh(callback: () => void, interval = 60000, enabled = true, pauseWhenHidden = false) {
+  const saved = useRef(callback);
+  const missed = useRef(false);
 
   useEffect(() => {
-    savedCallback.current = callback;
+    saved.current = callback;
   }, [callback]);
 
   useEffect(() => {
     if (!enabled) return;
+    const id = setInterval(() => {
+      if (pauseWhenHidden && document.visibilityState === 'hidden') {
+        missed.current = true;
+        return;
+      }
+      saved.current();
+    }, interval);
 
-    const tick = () => {
-      savedCallback.current();
+    const onVisible = () => {
+      if (document.visibilityState === 'visible' && missed.current) {
+        missed.current = false;
+        saved.current();
+      }
     };
+    if (pauseWhenHidden) document.addEventListener('visibilitychange', onVisible);
 
-    const id = setInterval(tick, interval);
-    return () => clearInterval(id);
-  }, [interval, enabled]);
+    return () => {
+      clearInterval(id);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
+  }, [interval, enabled, pauseWhenHidden]);
 }
-

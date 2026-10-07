@@ -1,27 +1,44 @@
 /**
- * Read-only client for the BILLIONS API.
+ * Read-only client for the BILLIONS API. Works on the server and in the browser.
  */
 
-import type { PerformanceMetricsResponse } from '@/types';
+import type { OutliersResponse, Strategy } from '@/types/api';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+/** Server-side code may use a private URL (API_URL); the browser uses the public one. */
+export const API_BASE_URL =
+  (typeof window === 'undefined' ? process.env.API_URL : undefined) ||
+  process.env.NEXT_PUBLIC_API_URL ||
+  'http://localhost:8000';
 
-async function get<T>(endpoint: string): Promise<T> {
-  const response = await fetch(`${API_BASE_URL}${endpoint}`);
-  if (!response.ok) {
-    let message = `HTTP ${response.status}`;
-    try {
-      const body = await response.json();
-      message = body.detail || message;
-    } catch {
-      // Body was not JSON; keep the status message.
-    }
-    throw new Error(message);
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    public status: number,
+  ) {
+    super(message);
   }
-  return response.json();
 }
 
-export const api = {
-  getPerformanceMetrics: (strategy: string) =>
-    get<PerformanceMetricsResponse>(`/api/v1/outliers/${encodeURIComponent(strategy)}`),
-};
+async function get<T>(path: string, init?: RequestInit & { next?: { revalidate?: number } }): Promise<T> {
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE_URL}${path}`, { ...init, signal: init?.signal ?? AbortSignal.timeout(15000) });
+  } catch {
+    throw new ApiError('The data service is not reachable.', 0);
+  }
+  if (!response.ok) {
+    let message = `The data service returned an error (${response.status}).`;
+    try {
+      const body = await response.json();
+      if (typeof body.detail === 'string') message = body.detail;
+    } catch {
+      // Body was not JSON; keep the generic message.
+    }
+    throw new ApiError(message, response.status);
+  }
+  return response.json() as Promise<T>;
+}
+
+export function getOutliers(strategy: Strategy, init?: Parameters<typeof get>[1]) {
+  return get<OutliersResponse>(`/api/v1/outliers/${strategy}`, init);
+}
