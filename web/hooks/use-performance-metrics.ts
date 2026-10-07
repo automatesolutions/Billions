@@ -14,9 +14,7 @@ export function usePerformanceMetrics(strategy: string, autoRefresh: boolean = f
     try {
       setLoading(true);
       setError(null);
-      console.log('Fetching performance metrics for strategy:', strategy);
       const result = await api.getPerformanceMetrics(strategy);
-      console.log('Performance metrics result:', result);
       setData(result);
     } catch (err) {
       console.error('Performance metrics fetch error:', err);

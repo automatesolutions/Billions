@@ -1,73 +1,41 @@
 """
-Configuration management for BILLIONS API
+Configuration for the BILLIONS API.
+
+Every value can be overridden with an environment variable of the same name.
 """
 
-from pydantic_settings import BaseSettings
-from typing import List
-import os
 from pathlib import Path
+from typing import Annotated, List
+
+from pydantic import field_validator
+from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
+
+ROOT_DIR = Path(__file__).resolve().parent.parent
 
 
 class Settings(BaseSettings):
-    """Application settings"""
-    
-    # Application
+    model_config = SettingsConfigDict(env_file=ROOT_DIR / ".env", extra="ignore", case_sensitive=True)
+
     APP_NAME: str = "BILLIONS API"
-    VERSION: str = "1.0.0"
-    DEBUG: bool = True
-    
-    # API
+    VERSION: str = "2.0.0"
+    DEBUG: bool = False
     API_V1_PREFIX: str = "/api/v1"
-    
-    # CORS
-    CORS_ORIGINS: List[str] = [
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-    ]
-    
-    # Database
-    DATABASE_URL: str = "sqlite:///./billions.db"
-    
-    # Get the absolute path to the database file in the parent directory
-    @property
-    def database_path(self) -> str:
-        """Get absolute path to database"""
-        return str(Path(__file__).parent.parent / "billions.db")
-    
-    # External APIs
+
+    # Comma-separated list, e.g. "https://billions.vercel.app,http://localhost:3000"
+    CORS_ORIGINS: Annotated[List[str], NoDecode] = ["http://localhost:3000", "http://127.0.0.1:3000"]
+
+    DATABASE_URL: str = f"sqlite:///{(ROOT_DIR / 'data' / 'billions.db').as_posix()}"
+    CACHE_DIR: Path = ROOT_DIR / "data" / "cache"
+
+    # Optional. Only used if set; the outlier universe works without it.
     ALPHA_VANTAGE_API_KEY: str = ""
-    FRED_API_KEY: str = ""
-    POLYGON_API_KEY: str = ""
-    
-    # Enhanced News Service API Keys
-    NEWS_API_KEY: str = ""
-    OPENAI_API_KEY: str = ""
-    ANTHROPIC_API_KEY: str = ""
-    
-    # Alpaca Trading API (set via .env)
-    ALPACA_API_KEY: str = ""
-    ALPACA_SECRET_KEY: str = ""
-    ALPACA_BASE_URL: str = "https://paper-api.alpaca.markets/v2"
-    
-    # HFT optional settings (can be overridden via .env)
-    HFT_EDGE_THRESHOLD: float = 0.0
-    HFT_MAX_POSITION_SIZE: int = 0
-    HFT_MAX_DAILY_LOSS: float = 0.0
-    HFT_MAX_LEVERAGE: float = 0.0
-    
-    # JWT
-    SECRET_KEY: str = "your-secret-key-change-in-production"
-    ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
-    
-    # ML Models
-    MODEL_PATH: str = "../funda/model"
-    CACHE_PATH: str = "../funda/cache"
-    
-    class Config:
-        env_file = ".env"
-        case_sensitive = True
+
+    @field_validator("CORS_ORIGINS", mode="before")
+    @classmethod
+    def _split_origins(cls, value):
+        if isinstance(value, str) and not value.strip().startswith("["):
+            return [origin.strip() for origin in value.split(",") if origin.strip()]
+        return value
 
 
 settings = Settings()
-

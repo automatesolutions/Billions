@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 
 export function TickerSearch() {
   const [ticker, setTicker] = useState('');
@@ -13,7 +12,7 @@ export function TickerSearch() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (ticker.trim()) {
-      router.push(`/analyze/${ticker.toUpperCase()}`);
+      router.push(`/analysis/${ticker.toUpperCase()}`);
     }
   };
 

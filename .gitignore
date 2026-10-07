@@ -1,41 +1,31 @@
-# Python virtual environments
+# Python
 .venv/
 venv/
-.env
-
-# Python cache files
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
-.Python
-
-# Database files
-*.db
-billions.db
-
-# IDE files
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# Test files
-test_*.py
-*_test.py
-
-# Coverage files
+*.py[cod]
+.pytest_cache/
+.coverage
 coverage.xml
 htmlcov/
 
-# OS files
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Runtime data (outlier cache, price cache)
+data/
+*.db
+
+# Node (root workspace)
+node_modules/
+
+# IDE / OS
+.vscode/
+.idea/
+*.swp
 .DS_Store
 Thumbs.db
-
-# Build files
-dist/
-build/
-*.egg-info/
 
 # Logs
 *.log

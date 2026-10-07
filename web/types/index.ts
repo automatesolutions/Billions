@@ -12,12 +12,6 @@ export interface PerfMetric {
   inserted?: string;
 }
 
-export interface OutliersResponse {
-  strategy: string;
-  count: number;
-  outliers: PerfMetric[];
-}
-
 export interface PerformanceMetricsResponse {
   strategy: string;
   count: number;
@@ -25,10 +19,3 @@ export interface PerformanceMetricsResponse {
 }
 
 export type Strategy = 'scalp' | 'swing' | 'longterm';
-
-export interface HealthCheck {
-  status: string;
-  service: string;
-  version: string;
-}
-

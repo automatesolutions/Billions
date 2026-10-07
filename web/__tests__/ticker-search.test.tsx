@@ -39,7 +39,7 @@ describe('TickerSearch Component', () => {
     await user.type(input, 'aapl');
     await user.click(button);
     
-    expect(mockPush).toHaveBeenCalledWith('/analyze/AAPL');
+    expect(mockPush).toHaveBeenCalledWith('/analysis/AAPL');
   });
 
   it('converts ticker to uppercase', async () => {
@@ -49,7 +49,7 @@ describe('TickerSearch Component', () => {
     const input = screen.getByPlaceholderText(/Enter ticker/i);
     await user.type(input, 'tsla{Enter}');
     
-    expect(mockPush).toHaveBeenCalledWith('/analyze/TSLA');
+    expect(mockPush).toHaveBeenCalledWith('/analysis/TSLA');
   });
 
   it('does not navigate with empty ticker', async () => {

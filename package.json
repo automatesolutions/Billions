@@ -1,0 +1,15 @@
+{
+  "name": "billions",
+  "private": true,
+  "description": "Read-only outlier intelligence. Next.js frontend + FastAPI backend.",
+  "scripts": {
+    "setup": "pnpm --dir web install && node scripts/setup-api.mjs",
+    "dev": "concurrently -n api,web -c red,white \"node scripts/dev-api.mjs\" \"pnpm --dir web dev\"",
+    "test": "node scripts/run-py.mjs -m pytest && pnpm --dir web test",
+    "lint": "node scripts/run-py.mjs -m flake8 api && pnpm --dir web lint"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  },
+  "packageManager": "pnpm@9.12.0"
+}

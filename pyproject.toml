@@ -1,17 +1,6 @@
 [tool.black]
 line-length = 127
-target-version = ['py312']
-include = '\.pyi?$'
-exclude = '''
-/(
-    \.git
-  | \.venv
-  | venv
-  | build
-  | dist
-  | __pycache__
-)/
-'''
+target-version = ["py312"]
 
 [tool.isort]
 profile = "black"
@@ -20,27 +9,8 @@ skip_gitignore = true
 
 [tool.pytest.ini_options]
 testpaths = ["api/tests"]
-python_files = "test_*.py"
-python_classes = "Test*"
-python_functions = "test_*"
-addopts = "-ra -q --strict-markers --cov=api --cov-report=term-missing"
+addopts = "-ra -q"
 
 [tool.coverage.run]
 source = ["api"]
-omit = [
-    "*/tests/*",
-    "*/venv/*",
-    "*/.venv/*",
-    "*/conftest.py",
-]
-
-[tool.coverage.report]
-exclude_lines = [
-    "pragma: no cover",
-    "def __repr__",
-    "raise AssertionError",
-    "raise NotImplementedError",
-    "if __name__ == .__main__.:",
-    "if TYPE_CHECKING:",
-]
-
+omit = ["api/tests/*"]
