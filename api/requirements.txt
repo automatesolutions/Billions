@@ -15,7 +15,7 @@ yfinance>=0.2.50
 requests>=2.31.0
 
 # Models (quant analysis)
-scikit-learn>=1.4.0
+scikit-learn>=1.8.0
 xgboost>=2.0.0
 
 # Storage

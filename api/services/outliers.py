@@ -183,8 +183,33 @@ def _scheduler_loop() -> None:
         with SessionLocal() as db:
             last_run = last_computed_at(db)
         if should_refresh(now, last_run, last_failure):
-            last_failure = None if refresh_once() else datetime.now(timezone.utc)
+            if refresh_once():
+                last_failure = None
+                _warm_top_analyses()
+            else:
+                last_failure = datetime.now(timezone.utc)
         _stop.wait(CHECK_EVERY_SECONDS)
+
+
+WARM_PER_STRATEGY = 5
+
+
+def top_symbols(db: Session, per_strategy: int = WARM_PER_STRATEGY) -> List[str]:
+    """Highest-scoring outliers across strategies, without duplicates."""
+    symbols: List[str] = []
+    for name in STRATEGIES:
+        rows = db.query(PerfMetric).filter(PerfMetric.strategy == name, PerfMetric.is_outlier.is_(True)).all()
+        rows.sort(key=lambda r: outlier_score(r.z_x, r.z_y), reverse=True)
+        symbols += [r.symbol for r in rows[:per_strategy] if r.symbol not in symbols]
+    return symbols
+
+
+def _warm_top_analyses() -> None:
+    from api.services import analysis  # local import: analysis pulls in the model libraries
+
+    with SessionLocal() as db:
+        symbols = top_symbols(db)
+    analysis.warm(symbols)
 
 
 def start_scheduler() -> None:

@@ -10,7 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from api.config import settings
 from api.database import init_db
-from api.routers import outliers
+from api.routers import analysis, outliers
 from api.services import outliers as outlier_service
 
 logging.basicConfig(level=logging.DEBUG if settings.DEBUG else logging.INFO)
@@ -41,6 +41,7 @@ app.add_middleware(
 )
 
 app.include_router(outliers.router, prefix=settings.API_V1_PREFIX)
+app.include_router(analysis.router, prefix=settings.API_V1_PREFIX)
 
 
 @app.get("/health")
