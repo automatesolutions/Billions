@@ -587,7 +587,18 @@ GSAP only, used sparingly:
 - Rows and cards fade and rise in (8px, 0.4s, `power2.out`) on first load. The stagger is spread over 0.3s in total, and only elements visible in the first screen animate, so long lists cost nothing extra.
 - Key numbers count up from 0 (0.6s).
 
-Under `prefers-reduced-motion: reduce`, nothing animates: values appear in their final state. There are no hover animations (Ferrari: hover states are not documented).
+Under `prefers-reduced-motion: reduce`, nothing animates: values appear in their final state.
+
+### Showroom layer (v2.1)
+
+The site now has a showroom front door and a richer hover vocabulary, still inside Ferrari's palette:
+
+- **Home (`/`)** is a cinematic hero, not a redirect: full-bleed `bg-black`, the `PackField` art (the pack, 1σ/2σ rings, one Rosso Corsa outlier), slow `streak` light, `display-mega` headline. Below it: the live board (spec cells + top five as race-position rows), strategy cards, a full-bleed `bg-livery` band, and a large ticker lookup.
+- **Inner pages** open with `PageHead`: full-bleed band, faint `bg-grid`, a red glow corner, `stripe` above the eyebrow.
+- **Hover = a red line drawing in.** Nav underline, table-row left bar, panel top stripe, strategy-card top bar. All `scale` transforms, 300–700ms, `ease-out`. Primary CTAs switch to `bg-livery` with a `sheen` sweep; outline CTAs fill white.
+- **Red text stays large.** Rank numbers in red only at `number-lg` (48px) and up. Smaller podium ranks use ink text with a red marker.
+- **Logo:** `components/logo.tsx`. Three rising bars and one square that has broken away from them, on a Rosso Corsa plate, with a `tracking-brand` wordmark.
+- **New tokens:** `primary-deep`, `black`, `steel` (the two DESIGN.md gradients), `display-mega`, `spacing-nav`, `spacing-hero`, `tracking-brand`; utilities `bg-livery`, `bg-cinema`, `bg-grid`, `glass`, `sheen`, `stripe`, `full-bleed`, `streak`, `pulse-dot`.
 
 ## Copy rules
 

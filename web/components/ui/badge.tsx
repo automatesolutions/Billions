@@ -13,7 +13,7 @@ export function Badge({ children, className, dot }: { children: ReactNode; class
       {dot && (
         <span
           aria-hidden
-          className={cn('size-xxs rounded-full', dot === 'up' && 'bg-up', dot === 'down' && 'bg-down', dot === 'muted' && 'bg-body')}
+          className={cn('size-xxs rounded-full', dot === 'up' && 'pulse-dot bg-up', dot === 'down' && 'bg-down', dot === 'muted' && 'bg-body')}
         />
       )}
       {children}

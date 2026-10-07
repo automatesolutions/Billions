@@ -16,12 +16,12 @@ export function StrategySwitcher({ current }: { current: Strategy }) {
             aria-current={active ? 'page' : undefined}
             scroll={false}
             className={cn(
-              'flex min-h-lg flex-col justify-center border-l border-hairline px-xxs py-xxs first:border-l-0 sm:px-sm',
-              active ? 'bg-primary text-on-primary' : 'text-body hover:text-ink',
+              'flex min-h-lg flex-col justify-center border-l border-hairline px-xxs py-xxs transition-colors duration-300 first:border-l-0 sm:min-h-xl sm:px-sm',
+              active ? 'bg-livery text-on-primary' : 'text-body hover:bg-black hover:text-ink',
             )}
           >
             <span className={cn('whitespace-nowrap text-nav uppercase sm:text-button', active ? 'text-on-primary' : 'text-ink')}>{copy.name}</span>
-            <span className="hidden text-caption sm:block">
+            <span className={cn('hidden text-caption sm:block', active && 'text-on-primary')}>
               {copy.short} · {copy.long}
             </span>
           </Link>

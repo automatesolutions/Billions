@@ -16,9 +16,12 @@ Full analysis page: [docs/screenshots/analysis-desktop-full.png](docs/screenshot
 
 | URL | What it shows |
 |---|---|
+| `/` | Home page: a hero, the live board (top five swing outliers and scan stats), the three strategies, and a ticker lookup |
 | `/outliers/scalp`, `/outliers/swing`, `/outliers/longterm` | Every liquid NASDAQ stock on a scatter of two return windows, plus a ranked list of the ones more than 2 standard deviations from the group |
 | `/analysis/{TICKER}` | Signal, price and next-session forecast, out-of-sample edge, risk, model comparison, validation, cost check, and the limits of all of it |
 | `/methodology` | How every number is made, in plain words |
+
+The header on every page has a ticker search, so you can open any NASDAQ stock's analysis from anywhere.
 
 Each page has its own URL, title and link preview, and works with the browser's back and forward buttons. The app can be installed to a phone's home screen (web app manifest and icons), and it shows an offline page without a connection.
 
@@ -110,9 +113,9 @@ api/                 FastAPI backend
                      analysis.py (cache), prices.py, universe.py, market_calendar.py
   tests/             pytest suite
 web/                 Next.js app (App Router, TypeScript, Tailwind v4)
-  DESIGN.md          design system (Ferrari-based) and copy rules
-  app/               outliers/[strategy], analysis/[ticker], methodology, offline
-  components/        charts (hand-written SVG), analysis, ui
+  DESIGN.md          design system (Ferrari-based), showroom layer and copy rules
+  app/               home page, outliers/[strategy], analysis/[ticker], methodology, offline
+  components/        charts (hand-written SVG), analysis, home (hero art), ui, logo
   e2e/               Playwright tests, mock API and recorded fixtures
 docs/                refactor plan, reference PDFs, screenshots, Lighthouse results
 scripts/             one-command dev helpers

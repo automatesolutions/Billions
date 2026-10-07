@@ -1,15 +1,22 @@
 'use client';
 
-import { useState, type FormEvent } from 'react';
+import { useId, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import { IconSearch } from '@tabler/icons-react';
+import { IconArrowRight, IconSearch } from '@tabler/icons-react';
+import { cn } from '@/lib/utils';
 
 const TICKER = /^[A-Za-z][A-Za-z0-9.-]{0,9}$/;
 
-export function TickerSearch() {
+/**
+ * Ticker lookup. `compact` sits in the header; `hero` is the large field on the home page,
+ * with a visible Analyze button so the action is obvious.
+ */
+export function TickerSearch({ variant = 'compact' }: { variant?: 'compact' | 'hero' }) {
   const [ticker, setTicker] = useState('');
   const [invalid, setInvalid] = useState(false);
   const router = useRouter();
+  const id = useId();
+  const hero = variant === 'hero';
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -25,13 +32,18 @@ export function TickerSearch() {
   };
 
   return (
-    <form role="search" onSubmit={handleSubmit} className="relative flex items-center">
-      <label htmlFor="ticker-search" className="sr-only">
+    <form role="search" onSubmit={handleSubmit} className={cn('relative flex items-stretch', hero && 'w-full max-w-prose')}>
+      <label htmlFor={id} className="sr-only">
         Ticker
       </label>
-      <IconSearch aria-hidden size={18} stroke={1.5} className="pointer-events-none absolute left-xs text-body" />
+      <IconSearch
+        aria-hidden
+        size={hero ? 22 : 18}
+        stroke={1.5}
+        className={cn('pointer-events-none absolute top-1/2 -translate-y-1/2 text-body', hero ? 'left-sm' : 'left-xs')}
+      />
       <input
-        id="ticker-search"
+        id={id}
         value={ticker}
         onChange={(e) => {
           setTicker(e.target.value);
@@ -42,14 +54,26 @@ export function TickerSearch() {
         autoCapitalize="characters"
         spellCheck={false}
         aria-invalid={invalid}
-        aria-describedby={invalid ? 'ticker-search-error' : undefined}
-        className="h-lg w-full rounded-sm border border-hairline bg-canvas pl-lg pr-xs text-body-md text-ink placeholder:text-body sm:w-search"
+        aria-describedby={invalid ? `${id}-error` : undefined}
+        className={cn(
+          'w-full border border-hairline bg-canvas text-ink transition-colors duration-300 placeholder:text-body',
+          'hover:border-muted focus:border-ink',
+          hero ? 'h-xl rounded-none pl-xl pr-xs text-title-sm' : 'h-lg rounded-sm pl-lg pr-xs text-body-md sm:w-search',
+        )}
       />
-      <button type="submit" className="sr-only">
+      <button
+        type="submit"
+        className={cn(
+          hero
+            ? 'sheen inline-flex shrink-0 items-center gap-xxs bg-primary px-md text-button uppercase text-on-primary hover:bg-livery'
+            : 'sr-only',
+        )}
+      >
         Analyze
+        {hero && <IconArrowRight aria-hidden size={18} stroke={1.75} />}
       </button>
       {invalid && (
-        <p id="ticker-search-error" role="alert" className="absolute top-full mt-xxxs text-caption text-down">
+        <p id={`${id}-error`} role="alert" className="absolute top-full mt-xxxs text-caption text-down">
           Use letters, numbers, dots or dashes.
         </p>
       )}

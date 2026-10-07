@@ -11,6 +11,7 @@ import { Direction } from '@/components/direction';
 import { Metric } from '@/components/analysis/metric';
 import { StrengthGauge } from '@/components/analysis/strength-gauge';
 import { Badge } from '@/components/ui/badge';
+import { PageHead } from '@/components/ui/page-head';
 import { Panel } from '@/components/ui/panel';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -54,19 +55,15 @@ export function AnalysisView({ data }: { data: AnalysisResponse }) {
 
 function Header({ data }: { data: AnalysisResponse }) {
   return (
-    <header className="flex flex-col gap-xs">
-      <p className="text-caption-upper uppercase text-body">Stock analysis</p>
-      <div className="flex flex-wrap items-end gap-x-md gap-y-xs">
-        <h1 className="text-display-lg sm:text-display-xl">{data.ticker}</h1>
-        <p className="pb-xxs text-number-lg text-ink">
-          <CountUp value={data.price} format={price} />
-        </p>
-      </div>
+    <PageHead eyebrow="Stock analysis" title={data.ticker}>
+      <p className="tabular text-number-lg text-ink lg:text-number-xl lg:font-medium">
+        <CountUp value={data.price} format={price} />
+      </p>
       <p className="text-body-sm">
         Close on <time dateTime={data.session_close} className="text-ink">{dateET(data.as_of)}</time> · Daily prices from Yahoo
         Finance · {data.history_days.toLocaleString('en-US')} trading days
       </p>
-    </header>
+    </PageHead>
   );
 }
 

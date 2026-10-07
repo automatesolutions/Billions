@@ -2,9 +2,17 @@ import { expect, test } from '@playwright/test';
 
 const DISCLAIMER = 'Information only. Not financial advice. This tool does not place trades.';
 
-test('outliers list opens a stock analysis and back again', async ({ page, isMobile }) => {
+test('home shows the live board and leads to the outliers', async ({ page }) => {
   await page.goto('/');
+  await expect(page.getByRole('heading', { level: 1, name: 'Stocks moving far from the pack.' })).toBeVisible();
+  await expect(page.getByRole('list', { name: 'Top five swing outliers' }).getByRole('link').first()).toContainText('USDE');
+  await expect(page.getByText(DISCLAIMER)).toBeVisible();
+  await page.getByRole('link', { name: /See today.s outliers/ }).click();
   await expect(page).toHaveURL(/\/outliers\/swing$/);
+});
+
+test('outliers list opens a stock analysis and back again', async ({ page, isMobile }) => {
+  await page.goto('/outliers/swing');
   await expect(page).toHaveTitle('Swing outliers · BILLIONS');
   await expect(page.getByRole('heading', { level: 1, name: 'Swing outliers' })).toBeVisible();
   await expect(page.getByText('Data as of')).toBeVisible();

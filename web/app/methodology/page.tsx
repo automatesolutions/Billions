@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
+import { PageHead } from '@/components/ui/page-head';
 
 export const metadata: Metadata = {
   title: 'Methodology',
@@ -17,7 +18,8 @@ const SECTIONS = [
 function Section({ id, title, children }: { id: string; title: string; children: ReactNode }) {
   return (
     <section id={id} aria-labelledby={`${id}-title`} className="flex flex-col gap-xs border-t border-hairline pt-md">
-      <h2 id={`${id}-title`} className="text-display-md">
+      <span className="stripe" />
+      <h2 id={`${id}-title`} className="text-display-lg">
         {title}
       </h2>
       <div className="flex max-w-prose flex-col gap-xs text-body-md [&_strong]:font-semibold [&_strong]:text-ink">{children}</div>
@@ -27,7 +29,7 @@ function Section({ id, title, children }: { id: string; title: string; children:
 
 function Term({ name, children }: { name: string; children: ReactNode }) {
   return (
-    <div className="border-l-2 border-hairline pl-xs">
+    <div className="border-l-2 border-hairline pl-xs transition-colors duration-300 hover:border-primary">
       <dt className="text-title-sm text-ink">{name}</dt>
       <dd>{children}</dd>
     </div>
@@ -37,21 +39,26 @@ function Term({ name, children }: { name: string; children: ReactNode }) {
 export default function MethodologyPage() {
   return (
     <article className="flex flex-col gap-lg">
-      <header className="flex flex-col gap-xs">
-        <p className="text-caption-upper uppercase text-body">Methodology</p>
-        <h1 className="text-display-lg sm:text-display-xl">What the numbers mean</h1>
+      <PageHead eyebrow="Methodology" title="What the numbers mean">
         <p className="max-w-prose text-title-sm text-body">
           BILLIONS measures how unusual a stock&apos;s recent move is, then tests whether its past returns show any edge.
           It describes data. It doesn&apos;t tell you what to do.
         </p>
-        <nav aria-label="On this page" className="flex flex-wrap gap-x-sm gap-y-xxs pt-xs text-nav uppercase">
-          {SECTIONS.map((s) => (
-            <a key={s.id} href={`#${s.id}`} className="flex min-h-lg items-center text-body hover:text-ink">
+        <nav aria-label="On this page" className="grid gap-px border border-hairline bg-hairline mt-xs text-nav uppercase sm:grid-cols-2 lg:grid-cols-4">
+          {SECTIONS.map((s, i) => (
+            <a
+              key={s.id}
+              href={`#${s.id}`}
+              className="group flex min-h-xl items-center gap-xs bg-canvas px-xs text-body transition-colors duration-300 hover:bg-black hover:text-ink"
+            >
+              <span aria-hidden className="tabular text-muted transition-colors duration-300 group-hover:text-primary">
+                {String(i + 1).padStart(2, '0')}
+              </span>
               {s.title}
             </a>
           ))}
         </nav>
-      </header>
+      </PageHead>
 
       <Section id="outliers" title="How outliers are found">
         <p>

@@ -23,6 +23,9 @@
   --color-hairline: #303030;
   --color-primary: #da291c;
   --color-primary-active: #b01e0a;
+  --color-primary-deep: #a00c01;
+  --color-black: #030303;
+  --color-steel: #3c3c3c;
   --color-on-primary: #ffffff;
   --color-up: #2fb36d;
   --color-down: #ff6b5e;
@@ -46,6 +49,8 @@
 
   /* Component sizes (not spacing) */
   --spacing-chart: 360px;
+  --spacing-nav: 64px;
+  --spacing-hero: 720px;
 
   /* Radius: sharp by default */
   --radius-none: 0px;
@@ -55,6 +60,10 @@
   /* Type */
   --font-sans: var(--font-general-sans), -apple-system, system-ui, sans-serif;
 
+  --text-display-mega: 80px;
+  --text-display-mega--line-height: 1.05;
+  --text-display-mega--letter-spacing: -1.6px;
+  --text-display-mega--font-weight: 500;
   --text-display-xl: 56px;
   --text-display-xl--line-height: 1.1;
   --text-display-xl--letter-spacing: -1.12px;
@@ -101,6 +110,8 @@
   --text-number-xl--letter-spacing: -1.6px;
   --text-number-xl--font-weight: 700;
 
+  --tracking-brand: 0.3em;
+
   /* Layout */
   --container-content: 1280px;
   --container-prose: 680px;
@@ -115,6 +126,8 @@
   html {
     background-color: var(--color-canvas);
     color-scheme: dark;
+    scroll-behavior: smooth;
+    scroll-padding-top: calc(var(--spacing-nav) + var(--spacing-xs));
     -webkit-text-size-adjust: 100%;
   }
 
@@ -146,6 +159,66 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* ---------- Decorative depth (DESIGN.md "Decorative Depth") ---------- */
+
+/* Rosso Corsa gradient: livery bands and primary CTA hover. */
+@utility bg-livery {
+  background-image: linear-gradient(180deg, var(--color-primary-deep), var(--color-primary) 64%);
+}
+
+/* Atmospheric darken used at section transitions. */
+@utility bg-cinema {
+  background-image: linear-gradient(180deg, var(--color-steel), var(--color-black) 64%);
+}
+
+/* Breaks out of the 1280px content column to the full viewport width. */
+@utility full-bleed {
+  width: 100vw;
+  margin-inline: calc(50% - 50vw);
+}
+
+/* Short Rosso Corsa racing stripe that sits above section eyebrows. */
+@utility stripe {
+  display: block;
+  width: var(--spacing-md);
+  height: 2px;
+  background-color: var(--color-primary);
+}
+
+/* Faint 64px grid, like a timing screen. Decorative only. */
+@utility bg-grid {
+  background-image:
+    linear-gradient(to right, color-mix(in srgb, var(--color-ink) 4%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in srgb, var(--color-ink) 4%, transparent) 1px, transparent 1px);
+  background-size: var(--spacing-xl) var(--spacing-xl);
+}
+
+/* Header glass over the canvas. */
+@utility glass {
+  background-color: color-mix(in srgb, var(--color-canvas) 82%, transparent);
+  backdrop-filter: saturate(140%) blur(16px);
+  -webkit-backdrop-filter: saturate(140%) blur(16px);
+}
+
+/* Light sweep across a CTA on hover. */
+@utility sheen {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(110deg, transparent 30%, color-mix(in srgb, var(--color-ink) 22%, transparent) 50%, transparent 70%);
+    transform: translateX(-120%);
+    transition: transform 0.7s var(--ease-out);
+  }
+  &:hover::after {
+    transform: translateX(120%);
+  }
+}
+
 @utility skeleton {
   background-color: var(--color-elevated);
   animation: skeleton-pulse 1.4s ease-in-out infinite;
@@ -157,7 +230,40 @@
   }
 }
 
+/* Slow drift for the hero light streaks. */
+@utility streak {
+  animation: streak-drift 9s ease-in-out infinite alternate;
+}
+
+@keyframes streak-drift {
+  from {
+    transform: translateX(-4%) skewX(-24deg);
+    opacity: 0.55;
+  }
+  to {
+    transform: translateX(4%) skewX(-24deg);
+    opacity: 1;
+  }
+}
+
+/* Live dot pulse for "market open". */
+@utility pulse-dot {
+  animation: pulse-dot 2s ease-out infinite;
+}
+
+@keyframes pulse-dot {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-up) 60%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 8px transparent;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
   *,
   *::before,
   *::after {

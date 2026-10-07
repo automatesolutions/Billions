@@ -13,6 +13,7 @@ import { CountUp, useReveal } from '@/components/motion';
 import { OutlierTable } from '@/components/outlier-table';
 import { StrategySwitcher } from '@/components/strategy-switcher';
 import { Button } from '@/components/ui/button';
+import { PageHead } from '@/components/ui/page-head';
 import { Panel } from '@/components/ui/panel';
 import { Skeleton } from '@/components/ui/skeleton';
 import { StateMessage } from '@/components/ui/state';
@@ -55,11 +56,9 @@ export function OutliersView({ strategy, initial }: { strategy: Strategy; initia
 
   return (
     <div ref={rootRef} className="flex flex-col gap-md">
-      <div className="flex flex-col gap-xs">
-        <p className="text-caption-upper uppercase text-body">Outliers · {copy.horizon}</p>
-        <h1 className="text-display-lg sm:text-display-xl">{copy.name} outliers</h1>
+      <PageHead eyebrow={`Outliers · ${copy.horizon}`} title={`${copy.name} outliers`}>
         <p className="max-w-prose text-title-sm text-body">{copy.summary}</p>
-      </div>
+      </PageHead>
 
       <StrategySwitcher current={strategy} />
 
@@ -144,7 +143,7 @@ function Stat({ label, children, className }: { label: string; children: ReactNo
   return (
     <div data-reveal className={className}>
       <dt className="text-caption-upper uppercase text-body">{label}</dt>
-      <dd className="text-number-lg text-ink">{children}</dd>
+      <dd className="tabular text-number-lg text-ink lg:text-number-xl lg:font-medium">{children}</dd>
     </div>
   );
 }

@@ -6,11 +6,13 @@ type Variant = 'primary' | 'outline' | 'text';
 
 const base =
   'inline-flex min-h-lg items-center justify-center gap-xxs rounded-none text-button uppercase select-none ' +
-  'disabled:cursor-not-allowed disabled:opacity-50';
+  'transition-colors duration-300 ease-out disabled:cursor-not-allowed disabled:opacity-50';
 
 const variants: Record<Variant, string> = {
-  primary: 'bg-primary px-md text-on-primary active:bg-primary-active',
-  outline: 'border border-ink px-md text-ink active:bg-elevated',
+  // Rosso Corsa, with the brand gradient and a light sweep on hover (DESIGN.md "Decorative Depth").
+  primary: 'sheen bg-primary px-md text-on-primary hover:bg-livery active:bg-primary-active active:bg-none',
+  // White outline fills white on hover, like Ferrari's secondary CTA.
+  outline: 'border border-ink px-md text-ink hover:bg-ink hover:text-canvas active:bg-body',
   text: 'px-xxs text-ink underline-offset-4 hover:underline',
 };
 
