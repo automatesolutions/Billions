@@ -11,6 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from api.config import settings
 from api.database import init_db
 from api.routers import outliers
+from api.services import outliers as outlier_service
 
 logging.basicConfig(level=logging.DEBUG if settings.DEBUG else logging.INFO)
 
@@ -18,7 +19,10 @@ logging.basicConfig(level=logging.DEBUG if settings.DEBUG else logging.INFO)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_db()
+    if settings.OUTLIER_SCHEDULER:
+        outlier_service.start_scheduler()
     yield
+    outlier_service.stop_scheduler()
 
 
 app = FastAPI(

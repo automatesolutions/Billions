@@ -1,7 +1,7 @@
 # BILLIONS refactor plan: outliers only
 
 Branch: `refactor/outliers-only`
-Status: Phase 0 (audit). Nothing has been deleted yet.
+Status: Phases 0–1 done. Decisions: all recommendations accepted (Q1–Q8).
 
 Goal: a public, read-only web app with three pages:
 
@@ -20,7 +20,7 @@ I read the code, not the README. These are the main ways the README is wrong:
 
 - The README says "89 tests passing, 85% coverage". The repo has 5 backend test files and 5 Vitest files. Most frontend tests cover auth and a test page.
 - It describes LSTM forecasts with confidence bands. The bands come from a heuristic (see bug B9), not a statistical interval.
-- It says the outlier page shows live data. In practice it silently shows **hard-coded mock data** whenever the API returns nothing, and with the current engine the API always returns nothing (see bug B1).
+- It says the outlier page shows live data. In practice it silently shows **hard-coded mock data** whenever the API returns nothing, and the engine almost never finds outliers (see B4, B5 and the B1 retraction).
 
 Sources read: `README.md`, `PLAN.md`, `SYSTEM_ARCHITECTURE_FLOWCHART.md`, every file in `api/`, `db/`, `funda/*.py`, `outlier/*.py`, `web/app`, `web/components`, `web/hooks`, `web/lib`, all config, deploy and CI files, `docs/reference/quant-trading-handbook.pdf`, `docs/reference/design-tricks-guide.pdf`, and `design-md/ferrari/` (`DESIGN.md` + `README.md`) from VoltAgent/awesome-design-md.
 
@@ -158,7 +158,7 @@ Legend: **KEEP** = reuse as is, apart from cleanup. **REWRITE** = keep the idea,
 
 | Path | Decision | Notes |
 |---|---|---|
-| `funda/outlier_engine.py` | KEEP, then REWRITE | This is the real engine. It has bugs B1, B3, B4 and B5, which must be fixed. |
+| `funda/outlier_engine.py` | KEEP, then REWRITE | This is the real engine. It has bugs B3, B4 and B5, which must be fixed. |
 | `funda/refresh_outliers.py` | KEEP + simplify | Thread plus status dict. Fine for a single worker. |
 | `funda/SPS.py` (3,655-line Dash app) | **ASK** → DELETE | The old desktop-style dashboard. Superseded by the web app. |
 | `funda/enhanced_features.py`, `train_lstm_model.py`, `fine_tuning_strategy.py`, `model_diagnostics.py`, `funda/model/*.pt` | Depends on the LSTM answer | |
@@ -207,7 +207,7 @@ Legend: **KEEP** = reuse as is, apart from cleanup. **REWRITE** = keep the idea,
 - shadcn UI primitives, restyled.
 
 **Rewritten:**
-- Outlier fetch and ranking: fixes B1, B3, B4 and B5, and adds rank, direction and a one-line reason.
+- Outlier fetch and ranking: fixes B3, B4 and B5, and adds rank, direction and a one-line reason.
 - The outliers page: no mock data, an SVG scatter, a table and per-strategy URLs.
 - The whole analysis page and endpoint (Phase 3 quant method, new `quant_analysis.py`).
 - Layout, theming, metadata, PWA, deploy configs, CI, docs.
@@ -220,7 +220,7 @@ Legend: **KEEP** = reuse as is, apart from cleanup. **REWRITE** = keep the idea,
 
 | # | Where | Problem |
 |---|---|---|
-| **B1** | `outlier_engine._fetch_batch` | Downloads `period=f"{lookback+5}d"`. Yahoo reads `Nd` as **calendar** days, but the lookback is in **trading** days. For example, swing needs 64 closes but gets about 47, and longterm needs 253 but gets about 177. Every ticker then fails `len(ser) < back_x + 1` and is skipped, for **all three strategies**. So the table stays empty, which is why the page falls back to mock data. I'm very confident of this from the code. I'll confirm it with a real run in Phase 1. |
+| ~~B1~~ | `outlier_engine._fetch_batch` | **Retracted.** I claimed Yahoo reads `period="Nd"` as calendar days. A live check with yfinance 1.7 returned exactly N trading rows (`68d` → 68 rows), so the old engine got enough data. The empty table came from B4/B5 instead: no key was found, so it fell back to 16 tickers, and almost nothing passes \|z\| > 2 in a group that small. |
 | **B2** | `outliers/client-page.tsx` | Axis labels are swapped against the engine. The engine stores `metric_x` = the *longer* window (scalp: 1m) and `metric_y` = the *shorter* one (1w). The UI labels X as 1-week and Y as 1-month. The strategy dropdown text is also inconsistent. |
 | **B3** | `outlier_engine._calc_pct` | `ser.iloc[-lookback]` is `lookback-1` bars back. That is an off-by-one: a "21-day" return is really 20 days. |
 | **B4** | `outlier_engine` | With no `ALPHA_VANTAGE_API_KEY`, the universe falls back to 16 mega-caps. A z-score across 16 names rarely passes 2, so in practice there are no outliers. With a key, it calls `yf.Ticker(t).info` once per NASDAQ ticker (around 3,000+ calls), with sleeps. That takes hours and Yahoo will rate-limit it. See Q4. |
@@ -300,3 +300,13 @@ Code that can send or simulate orders today: `api/routers/trading.py`, `api/rout
 | **Q6** | Ticker search box in the nav (opens `/analysis/{ticker}` for any symbol). | **Keep a minimal one.** Tell me if you'd rather analysis be reachable only from outliers. |
 | **Q7** | Committed Alpaca keys (S1). | Revoke them now. A history rewrite (`git filter-repo`) is optional, and it needs a force-push, which I won't do without your go-ahead. |
 | **Q8** | Default round-trip cost for the cost check. | 10 bps, shown and editable in the UI. |
+
+---
+
+## 8. Changes made after the audit
+
+- **Liquidity filter instead of market cap.** The old engine fetched `Ticker.info` once per symbol to read market cap (thousands of slow calls). The new engine screens on **median daily dollar volume over 20 sessions**, using the same bulk download. Floors: scalp $25M, swing $15M, longterm $50M. It also skips stocks under $3 and drops symbols with no close in the last 3 sessions. The universe is capped at the 1,000 most liquid names.
+- **Returns use exact trading-day windows:** `P[-1] / P[-1-N] - 1`. This fixes B3.
+- **One download feeds all three strategies.** A full refresh is about 4,000 symbols in batches of 400.
+- **Refresh is scheduled, not public.** It runs at startup when there is no data, every 30 minutes while the market is open, and once 20 minutes after each close. `POST /refresh` is gone (B14).
+- **Ranking:** score = √(z_x² + z_y²). Direction comes from the axes past the threshold, giving up, down or mixed. The reason is one plain sentence.

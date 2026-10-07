@@ -1,8 +1,8 @@
 """
-Outlier endpoints (read-only market data).
+Outlier endpoints (read-only).
 """
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy.orm import Session
 
 from api.database import get_db
@@ -22,15 +22,10 @@ def get_strategies():
     return {"strategies": service.all_strategies()}
 
 
-@router.get("/refresh/status")
-def get_refresh_status():
+@router.get("/status")
+def get_status():
+    """State of the background refresh. Refreshes are scheduled; they cannot be started from the API."""
     return service.refresh_status()
-
-
-@router.post("/refresh", status_code=202)
-def refresh_all():
-    started = service.start_refresh()
-    return {"started": started, "status": service.refresh_status()}
 
 
 @router.get("/{strategy}/info")
@@ -39,18 +34,7 @@ def get_strategy_info(strategy: str):
 
 
 @router.get("/{strategy}")
-def get_outliers(strategy: str, db: Session = Depends(get_db)):
+def get_outliers(strategy: str, response: Response, db: Session = Depends(get_db)):
     _check_strategy(strategy)
-    rows = service.get_metrics(db, strategy)
-    metrics = [
-        {
-            "symbol": r.symbol,
-            "metric_x": r.metric_x,
-            "metric_y": r.metric_y,
-            "z_x": r.z_x,
-            "z_y": r.z_y,
-            "is_outlier": bool(r.is_outlier),
-        }
-        for r in rows
-    ]
-    return {"strategy": strategy, "count": len(metrics), "metrics": metrics}
+    response.headers["Cache-Control"] = "public, max-age=60, stale-while-revalidate=300"
+    return service.get_outliers(db, strategy)

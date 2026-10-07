@@ -27,6 +27,10 @@ class Settings(BaseSettings):
     DATABASE_URL: str = f"sqlite:///{(ROOT_DIR / 'data' / 'billions.db').as_posix()}"
     CACHE_DIR: Path = ROOT_DIR / "data" / "cache"
 
+    # Outlier refresh: background scheduler on/off, and interval while the market is open.
+    OUTLIER_SCHEDULER: bool = True
+    REFRESH_INTERVAL_MINUTES: int = 30
+
     # Optional. Only used if set; the outlier universe works without it.
     ALPHA_VANTAGE_API_KEY: str = ""
 

@@ -1,205 +1,174 @@
-import io
+"""
+Outlier engine.
+
+For each strategy, every liquid stock in the universe gets two trailing returns
+(a longer and a shorter window, in trading days). Each return is turned into a
+z-score across the universe. A stock is an outlier when either |z| > 2.
+
+`compute_strategy_metrics` is pure (prices in, table out) and unit-tested.
+`run_refresh` downloads prices once and stores all strategies.
+"""
+
 import logging
 import time
+from dataclasses import dataclass
+from datetime import datetime, timezone
+from typing import Dict, List, Optional, Tuple
 
+import numpy as np
 import pandas as pd
-import requests
 import yfinance as yf
-from scipy.stats import zscore
 from sqlalchemy import delete
 
-from api.config import settings
 from api.database import SessionLocal
 from api.models import PerfMetric
+from api.services.universe import fetch_universe
 
-api_key = settings.ALPHA_VANTAGE_API_KEY
+logger = logging.getLogger(__name__)
 
-STRATEGIES = {
-    "scalp": ("1m", "1w", 21, 5, 1e9),  # 1B market cap
-    "swing": ("3m", "1m", 63, 21, 2e9),  # 2B market cap
-    "longterm": ("1y", "6m", 252, 126, 10e9),  # 10B market cap
+Z_THRESHOLD = 2.0
+LIQUIDITY_WINDOW = 20  # trading days used for median dollar volume
+MIN_PRICE = 3.0  # skip sub-$3 stocks: prices this low make % moves noisy
+MAX_UNIVERSE = 1000  # most liquid names kept after screening
+MAX_STALE_DAYS = 3  # drop symbols whose last close lags the market by more than this
+DOWNLOAD_BATCH = 400
+
+
+@dataclass(frozen=True)
+class Strategy:
+    name: str
+    long_days: int
+    short_days: int
+    long_label: str
+    short_label: str
+    min_dollar_volume: float  # median daily $ volume over LIQUIDITY_WINDOW
+
+
+STRATEGIES: Dict[str, Strategy] = {
+    "scalp": Strategy("scalp", 21, 5, "1 month", "1 week", 25e6),
+    "swing": Strategy("swing", 63, 21, "3 months", "1 month", 15e6),
+    "longterm": Strategy("longterm", 252, 126, "1 year", "6 months", 50e6),
 }
 
 
-def _fetch_nasdaq_tickers():
-    """Fetch NASDAQ tickers from Alpha Vantage API"""
-    if not api_key:
-        logging.warning("[Outlier] No Alpha Vantage API key found, using fallback tickers")
-        return [
-            "AAPL",
-            "MSFT",
-            "NVDA",
-            "AMZN",
-            "META",
-            "GOOGL",
-            "GOOG",
-            "TSLA",
-            "AMD",
-            "NFLX",
-            "INTC",
-            "CSCO",
-            "ADBE",
-            "PEP",
-            "AVGO",
-            "COST",
-        ]
-
-    url = f"https://www.alphavantage.co/query?function=LISTING_STATUS&apikey={api_key}"
-    logging.info("[Outlier] Fetching NASDAQ tickers from Alpha Vantage...")
-
-    try:
-        response = requests.get(url)
-        if response.status_code == 200:
-            nasdaq_data = pd.read_csv(io.StringIO(response.text))
-
-            # Filter for NASDAQ and active tickers
-            if "exchange" in nasdaq_data.columns and "status" in nasdaq_data.columns:
-                nasdaq_tickers = nasdaq_data[(nasdaq_data["exchange"] == "NASDAQ") & (nasdaq_data["status"] == "Active")][
-                    "symbol"
-                ].tolist()
-            else:
-                nasdaq_tickers = nasdaq_data["symbol"].tolist()
-
-            logging.info("[Outlier] Found %d active NASDAQ tickers", len(nasdaq_tickers))
-            return nasdaq_tickers
-        else:
-            logging.error("[Outlier] Failed to fetch data, status code: %d", response.status_code)
-            return []
-    except Exception as e:
-        logging.error("[Outlier] Error fetching NASDAQ tickers: %s", e)
-        return []
+def trailing_return(close: pd.Series, days: int) -> float:
+    """Percent return over the last `days` trading days: P[-1] / P[-1-days] - 1."""
+    close = close.dropna()
+    if len(close) < days + 1:
+        return np.nan
+    return float((close.iloc[-1] / close.iloc[-1 - days] - 1.0) * 100.0)
 
 
-def _filter_valid_tickers(tickers):
-    """Filter out tickers with non-alphabetic characters or unusual lengths."""
-    valid = []
-    for t in tickers:
-        if pd.isna(t):
-            continue
-        t = str(t)
-        if t.isalpha() and 1 < len(t) <= 5:
-            valid.append(t)
-    return valid
+def zscores(values: pd.Series) -> pd.Series:
+    std = values.std(ddof=0)
+    if not np.isfinite(std) or std == 0:
+        return pd.Series(0.0, index=values.index)
+    return (values - values.mean()) / std
 
 
-def _filter_high_volume_tickers(tickers, min_volume=1000000, min_market_cap=1e9, batch_size=50):
-    """Filter tickers based on volume and market cap."""
-    filtered_tickers = []
-    for i in range(0, len(tickers), batch_size):
-        batch = tickers[i : i + batch_size]
-        logging.info(
-            "[Outlier] Screening batch %d/%d for volume and market cap...",
-            i // batch_size + 1,
-            (len(tickers) // batch_size) + 1,
-        )
-
-        for ticker in batch:
-            try:
-                yf_ticker = yf.Ticker(ticker)
-                info = yf_ticker.info
-                avg_volume = info.get("averageDailyVolume10Day", 0)
-                market_cap = info.get("marketCap", 0)
-
-                if avg_volume >= min_volume and market_cap >= min_market_cap:
-                    filtered_tickers.append(ticker)
-                    logging.debug("[Outlier] Added %s (Volume: %d, Market Cap: %.2fB)", ticker, avg_volume, market_cap / 1e9)
-                else:
-                    logging.debug("[Outlier] Skipped %s (Volume: %d, Market Cap: %.2fB)", ticker, avg_volume, market_cap / 1e9)
-            except Exception as e:
-                logging.debug("[Outlier] Error screening %s: %s", ticker, e)
-        time.sleep(1)  # Rate limiting
-
-    return filtered_tickers
+def liquid_symbols(
+    close: pd.DataFrame, volume: pd.DataFrame, min_dollar_volume: float, limit: int = MAX_UNIVERSE
+) -> List[str]:
+    """Symbols above the price and dollar-volume floors, most liquid first, capped at `limit`."""
+    dollar_volume = (close * volume).tail(LIQUIDITY_WINDOW).median()
+    last_price = close.ffill().iloc[-1]
+    ok = (dollar_volume >= min_dollar_volume) & (last_price >= MIN_PRICE)
+    return dollar_volume[ok].sort_values(ascending=False).head(limit).index.tolist()
 
 
-def _fetch_batch(tickers: list[str], lookback_days: int):
-    """Download Close price data from Yahoo Finance"""
-    all_data = {}
-    batch_size = 50
-    for i in range(0, len(tickers), batch_size):
-        batch = tickers[i : i + batch_size]
-        logging.info("[Outlier] Fetching batch %d/%d...", i // batch_size + 1, (len(tickers) // batch_size) + 1)
+def fresh_symbols(close: pd.DataFrame, max_stale_days: int = MAX_STALE_DAYS) -> List[str]:
+    """Symbols whose last valid close is within `max_stale_days` sessions of the newest row."""
+    recent = close.tail(max_stale_days + 1).notna().any()
+    return recent[recent].index.tolist()
 
+
+def compute_strategy_metrics(close: pd.DataFrame, volume: pd.DataFrame, strategy: Strategy) -> pd.DataFrame:
+    """
+    close, volume: date-indexed frames, one column per symbol.
+    Returns a frame indexed by symbol with metric_x (long %), metric_y (short %), z_x, z_y, is_outlier.
+    """
+    fresh = fresh_symbols(close)
+    symbols = liquid_symbols(close[fresh], volume[fresh], strategy.min_dollar_volume)
+    rows = {}
+    for symbol in symbols:
+        series = close[symbol].dropna()
+        long_ret = trailing_return(series, strategy.long_days)
+        short_ret = trailing_return(series, strategy.short_days)
+        if np.isfinite(long_ret) and np.isfinite(short_ret):
+            rows[symbol] = (long_ret, short_ret)
+
+    df = pd.DataFrame.from_dict(rows, orient="index", columns=["metric_x", "metric_y"])
+    if len(df) < 3:
+        return df.assign(z_x=pd.Series(dtype=float), z_y=pd.Series(dtype=float), is_outlier=pd.Series(dtype=bool))
+
+    df["z_x"] = zscores(df["metric_x"])
+    df["z_y"] = zscores(df["metric_y"])
+    df["is_outlier"] = (df["z_x"].abs() > Z_THRESHOLD) | (df["z_y"].abs() > Z_THRESHOLD)
+    return df
+
+
+def download_prices(symbols: List[str], period: str = "2y") -> Tuple[pd.DataFrame, pd.DataFrame]:
+    """Bulk daily download from Yahoo Finance. Returns (close, volume) frames."""
+    closes, volumes = [], []
+    for start in range(0, len(symbols), DOWNLOAD_BATCH):
+        batch = symbols[start : start + DOWNLOAD_BATCH]
         try:
-            batch_data = yf.download(batch, period=f"{lookback_days+5}d", interval="1d", group_by="ticker")
-            for ticker in batch:
-                if ticker in batch_data and "Close" in batch_data[ticker]:
-                    all_data[ticker] = batch_data[ticker]["Close"].dropna()
-        except Exception as e:
-            logging.error("[Outlier] Error fetching batch %d: %s", i // batch_size + 1, e)
-        time.sleep(1)  # Rate limiting
-
-    return all_data
-
-
-def _calc_pct(ser: pd.Series, lookback: int):
-    return (ser.iloc[-1] - ser.iloc[-lookback]) / ser.iloc[-lookback] * 100
-
-
-def run_outlier_detection(strategy: str, tickers: list[str] = None):
-    if strategy not in STRATEGIES:
-        raise ValueError(f"Unknown strategy {strategy}")
-
-    x_lab, y_lab, back_x, back_y, min_market_cap = STRATEGIES[strategy]
-
-    # If no tickers provided, fetch NASDAQ tickers
-    if tickers is None:
-        logging.info("[Outlier] No tickers provided, fetching NASDAQ tickers for %s", strategy)
-        nasdaq_tickers = _fetch_nasdaq_tickers()
-        if not nasdaq_tickers:
-            logging.error("[Outlier] No NASDAQ tickers found for %s", strategy)
-            return
-
-        # Filter valid tickers
-        valid_tickers = _filter_valid_tickers(nasdaq_tickers)
-        logging.info("[Outlier] %d valid tickers after filtering", len(valid_tickers))
-
-        # Filter by volume and market cap
-        tickers = _filter_high_volume_tickers(valid_tickers, min_market_cap=min_market_cap)
-        logging.info("[Outlier] %d tickers after volume/market cap filtering for %s", len(tickers), strategy)
-
-    if not tickers:
-        logging.warning("[Outlier] No tickers available for %s", strategy)
-        return
-
-    logging.info("[Outlier] Downloading prices for %s (%d tickers)", strategy, len(tickers))
-    prices = _fetch_batch(tickers, back_x)
-
-    rows = []
-    for t, ser in prices.items():
-        if len(ser) < back_x + 1:
-            logging.debug("[Outlier] Skipping %s (insufficient data: %d days)", t, len(ser))
+            data = yf.download(
+                batch, period=period, interval="1d", group_by="ticker", auto_adjust=True, threads=True, progress=False
+            )
+        except Exception as exc:  # noqa: BLE001 - one bad batch should not stop the scan
+            logger.warning("Price batch %d failed: %s", start // DOWNLOAD_BATCH + 1, exc)
             continue
-        m_x = _calc_pct(ser, back_x)
-        m_y = _calc_pct(ser, back_y)
-        rows.append({"symbol": t, "metric_x": m_x, "metric_y": m_y})
+        if data.empty:
+            continue
+        closes.append(data.xs("Close", axis=1, level=1))
+        volumes.append(data.xs("Volume", axis=1, level=1))
+        time.sleep(1)  # be polite to Yahoo between batches
 
-    if not rows:
-        logging.warning("[Outlier] No rows for strategy %s", strategy)
-        return
+    if not closes:
+        raise RuntimeError("No price data downloaded")
+    close = pd.concat(closes, axis=1).sort_index()
+    volume = pd.concat(volumes, axis=1).sort_index()
+    close = close.loc[:, ~close.columns.duplicated()]
+    volume = volume.loc[:, ~volume.columns.duplicated()]
+    return close, volume
 
-    df = pd.DataFrame(rows).set_index("symbol")
-    z = df.apply(zscore)
-    df["z_x"] = z["metric_x"]
-    df["z_y"] = z["metric_y"]
-    df["is_outlier"] = (df["z_x"].abs() > 2) | (df["z_y"].abs() > 2)
 
-    with SessionLocal() as s:
-        s.execute(delete(PerfMetric).where(PerfMetric.strategy == strategy))
-        s.bulk_insert_mappings(
-            PerfMetric,
-            [
-                dict(
-                    strategy=strategy,
-                    symbol=idx,
-                    metric_x=row.metric_x,
-                    metric_y=row.metric_y,
-                    z_x=row.z_x,
-                    z_y=row.z_y,
-                    is_outlier=row.is_outlier,
-                )
-                for idx, row in df.iterrows()
-            ],
+def store_metrics(strategy: str, df: pd.DataFrame, price_date, computed_at: datetime) -> None:
+    with SessionLocal() as session:
+        session.execute(delete(PerfMetric).where(PerfMetric.strategy == strategy))
+        session.add_all(
+            PerfMetric(
+                strategy=strategy,
+                symbol=symbol,
+                metric_x=float(row.metric_x),
+                metric_y=float(row.metric_y),
+                z_x=float(row.z_x),
+                z_y=float(row.z_y),
+                is_outlier=bool(row.is_outlier),
+                price_date=price_date,
+                inserted=computed_at,
+            )
+            for symbol, row in df.iterrows()
         )
-        s.commit()
-    logging.info("[Outlier] Stored %d rows for %s", len(df), strategy)
+        session.commit()
+
+
+def run_refresh(strategies: Optional[List[str]] = None) -> Dict[str, int]:
+    """Download the universe once and store metrics for each strategy. Returns {strategy: outlier count}."""
+    strategies = strategies or list(STRATEGIES)
+    symbols = fetch_universe()
+    close, volume = download_prices(symbols)
+    price_date = close.index[-1].date()
+    computed_at = datetime.now(timezone.utc)
+
+    counts = {}
+    for name in strategies:
+        df = compute_strategy_metrics(close, volume, STRATEGIES[name])
+        if df.empty:
+            logger.warning("No metrics for %s; keeping previous results", name)
+            continue
+        store_metrics(name, df, price_date, computed_at)
+        counts[name] = int(df["is_outlier"].sum())
+        logger.info("Stored %d rows for %s (%d outliers)", len(df), name, counts[name])
+    return counts

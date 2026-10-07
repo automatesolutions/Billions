@@ -5,6 +5,7 @@ Pytest fixtures. Each test gets a fresh in-memory SQLite database.
 import os
 
 os.environ.setdefault("DATABASE_URL", "sqlite:///:memory:")
+os.environ.setdefault("OUTLIER_SCHEDULER", "false")
 
 import pytest  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
