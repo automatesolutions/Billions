@@ -32,6 +32,13 @@ SIGNIFICANCE_PERCENTILE = 95.0
 
 AR_FEATURES = ["lag_1"]
 XGB_FEATURES = ["wd_0", "wd_1", "wd_2", "wd_3", "wd_4", "dir_1", "dirma_5", "dirma_20"]
+SESSION_OPEN_MINUTES = 9 * 60 + 30  # 9:30 New York
+
+
+def slot_features(slots: int) -> List[str]:
+    """XGBoost features for intraday bars: time-of-session slot instead of weekday."""
+    return [f"slot_{k}" for k in range(slots)] + ["dir_1", "dirma_5", "dirma_20"]
+
 ONLINE_FEATURES = ["lag_1", "lag_2", "lag_3", "lag_5", "ma_5", "ma_20"]
 BASE_MODELS = ("ar1", "xgboost", "online")
 
@@ -45,13 +52,14 @@ def log_returns(close: pd.Series) -> pd.Series:
     return np.log(close / close.shift(1)).dropna()
 
 
-def build_features(returns: pd.Series) -> pd.DataFrame:
+def build_features(returns: pd.Series, slot_minutes: Optional[int] = None, slots: int = 0) -> pd.DataFrame:
     """
-    One row per day t with the target r_t and features known before day t.
+    One row per bar t with the target r_t and features known before bar t.
 
     Leakage guard: every feature is computed from `returns.shift(k)` with k >= 1,
-    and rolling windows are applied *after* shift(1). The weekday is a property of
-    the calendar date itself, known in advance.
+    and rolling windows are applied *after* shift(1). The weekday, and for intraday
+    bars the time-of-session slot, are properties of the bar's timestamp, known in advance.
+    Intraday indexes are New York wall-clock times (tz-naive).
     """
     r = returns.astype(float)
     direction = np.sign(r)
@@ -67,6 +75,12 @@ def build_features(returns: pd.Series) -> pd.DataFrame:
     weekday = pd.Series(pd.DatetimeIndex(r.index).weekday, index=r.index)
     for d in range(5):
         out[f"wd_{d}"] = (weekday == d).astype(float)
+    if slot_minutes:
+        index = pd.DatetimeIndex(r.index)
+        minutes = index.hour * 60 + index.minute - SESSION_OPEN_MINUTES
+        slot = np.clip(minutes // slot_minutes, 0, slots - 1)
+        for k in range(slots):
+            out[f"slot_{k}"] = (slot == k).astype(float)
     return out
 
 
@@ -79,7 +93,7 @@ def next_day_features(returns: pd.Series, next_date: pd.Timestamp) -> pd.DataFra
 # --------------------------------------------------------------------------- edge and risk metrics
 
 
-def edge_metrics(strategy_returns: Sequence[float]) -> Dict:
+def edge_metrics(strategy_returns: Sequence[float], periods_per_year: int = TRADING_DAYS) -> Dict:
     """
     Win rate, average win/loss, expected value and annualised Sharpe of a series of per-period returns.
     EV = P(win) * avg win - P(loss) * avg loss. Days with exactly zero return count as neither.
@@ -99,7 +113,7 @@ def edge_metrics(strategy_returns: Sequence[float]) -> Dict:
         "avg_win": avg_win,
         "avg_loss": avg_loss,
         "expected_value": p_win * avg_win - p_loss * avg_loss if n else np.nan,
-        "sharpe": float(s.mean() / std * np.sqrt(TRADING_DAYS)) if n > 1 and std > 0 else np.nan,
+        "sharpe": float(s.mean() / std * np.sqrt(periods_per_year)) if n > 1 and std > 0 else np.nan,
         "total_log_return": float(s.sum()) if n else np.nan,
     }
 
@@ -182,15 +196,18 @@ class AR1Model:
 
 
 class XGBModel:
+    def __init__(self, features: Sequence[str] = XGB_FEATURES):
+        self.features = list(features)
+
     def fit(self, X: pd.DataFrame, y: np.ndarray):
         self.model = XGBRegressor(
             max_depth=3, n_estimators=50, learning_rate=0.12, subsample=1.0, random_state=0, n_jobs=1, verbosity=0
         )
-        self.model.fit(X[XGB_FEATURES].values, y)
+        self.model.fit(X[self.features].values, y)
         return self
 
     def predict(self, X: pd.DataFrame) -> np.ndarray:
-        return self.model.predict(X[XGB_FEATURES].values).astype(float)
+        return self.model.predict(X[self.features].values).astype(float)
 
 
 def pa1_step(w: np.ndarray, b: float, x: np.ndarray, y: float, aggressiveness: float) -> Tuple[np.ndarray, float]:
@@ -274,7 +291,7 @@ class StackedFit:
     oof_y: np.ndarray
 
 
-def fit_stack(train: pd.DataFrame, n_blocks: int = 3) -> StackedFit:
+def fit_stack(train: pd.DataFrame, n_blocks: int = 3, xgb_features: Sequence[str] = XGB_FEATURES) -> StackedFit:
     """
     Fit the three base models and the meta-learner on `train` without leakage:
     the meta-learner is fit on out-of-fold base forecasts (each block predicted by
@@ -289,14 +306,14 @@ def fit_stack(train: pd.DataFrame, n_blocks: int = 3) -> StackedFit:
     for k in range(1, n_blocks):
         past, block = train.iloc[: edges[k]], train.iloc[edges[k] : edges[k + 1]]
         ar = AR1Model().fit(past, past["target"].values)
-        xg = XGBModel().fit(past, past["target"].values)
+        xg = XGBModel(xgb_features).fit(past, past["target"].values)
         oof_rows.append(np.column_stack([ar.predict(block), xg.predict(block), online.prequential[edges[k] : edges[k + 1]]]))
         oof_y.append(block["target"].values)
     oof_base, oof_target = np.vstack(oof_rows), np.concatenate(oof_y)
 
     return StackedFit(
         ar1=AR1Model().fit(train, y),
-        xgb=XGBModel().fit(train, y),
+        xgb=XGBModel(xgb_features).fit(train, y),
         online=online,
         meta=fit_meta(oof_base, oof_target),
         oof_base=oof_base,
@@ -327,6 +344,8 @@ def walk_forward(
     fit_predict: Callable[[pd.DataFrame, pd.DataFrame], np.ndarray],
     start_fraction: float = 0.5,
     step: int = WALK_FORWARD_STEP,
+    periods_per_year: int = TRADING_DAYS,
+    intraday: bool = False,
 ) -> Dict:
     """
     Expanding: train on [0, s), test on [s, s+step). Rolling: train on the last `window` days before s.
@@ -350,7 +369,7 @@ def walk_forward(
         y = test["target"].values
         folds.append(
             {
-                "start": test.index[0].date().isoformat(),
+                "start": test.index[0].isoformat() if intraday else test.index[0].date().isoformat(),
                 "train_days": len(train),
                 "test_days": len(test),
                 "hit_rate": hit_rate(p, y),
@@ -359,7 +378,7 @@ def walk_forward(
         preds.append(p)
         actual.append(y)
     p_all, y_all = np.concatenate(preds), np.concatenate(actual)
-    edge = edge_metrics(signal_returns(p_all, y_all))
+    edge = edge_metrics(signal_returns(p_all, y_all), periods_per_year)
     return {
         "scheme": scheme,
         "folds": folds,
@@ -558,11 +577,6 @@ def analyze(close: pd.Series, next_date: Optional[pd.Timestamp] = None, cost_bps
             "latest_move_bps": latest_move_bps,
             "expected_value_bps": ev_bps,
             "covers_cost": expected_move_bps > cost_bps,
-        },
-        "microstructure": {
-            "available": False,
-            "reason": "Order-book imbalance and mid-price need level-2 quotes (bids and asks at each price). "
-            "Yahoo Finance provides daily bars only, so these measures are not shown.",
         },
         "caveats": caveats,
     }

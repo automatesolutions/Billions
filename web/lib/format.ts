@@ -65,3 +65,16 @@ export function ratio(value: number | null | undefined, digits = 2): string {
   if (value === null || value === undefined || !Number.isFinite(value)) return '—';
   return plain(value, digits);
 }
+
+/**
+ * A bar time from the Quant API. Intraday bars are New York wall-clock strings without a zone
+ * ("2026-10-16T10:30:00"), so they are formatted as-is, never shifted into the viewer's zone.
+ */
+export function barTime(iso: string, withDate = true): string {
+  if (/^\d{4}-\d{2}-\d{2}$/.test(iso)) return dateET(iso);
+  const wall = new Date(`${iso.slice(0, 19)}Z`);
+  const opts: Intl.DateTimeFormatOptions = withDate
+    ? { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: 'UTC' }
+    : { hour: 'numeric', minute: '2-digit', timeZone: 'UTC' };
+  return `${new Intl.DateTimeFormat('en-US', opts).format(wall)} ET`;
+}

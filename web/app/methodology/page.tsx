@@ -148,6 +148,28 @@ export default function MethodologyPage() {
         </ul>
       </Section>
 
+      <Section id="quant" title="How the Quant page works">
+        <ul className="flex list-disc flex-col gap-xxs pl-sm">
+          <li>
+            <strong>Any interval.</strong> The same models run on 1-minute, 1-hour, 4-hour or daily bars. Intraday bars use the
+            time of the session in place of the weekday. The 1-minute strategy holds nothing overnight.
+          </li>
+          <li>
+            <strong>Sizing.</strong> Position = tanh(forecast ÷ (0.1 × a typical bar&apos;s move)), a share of your maximum from
+            −1 (fully short) to +1 (fully long). Each change in position pays half a round-trip cost.
+          </li>
+          <li>
+            <strong>Checks.</strong> The action is flat unless the model beats 95% of random strategies, holds up in
+            walk-forward, makes money after costs, has a live record that isn&apos;t failing, and has a clear lean.
+          </li>
+          <li>
+            <strong>Is it working?</strong> Every signal is saved when its bar closes and scored when the next bar closes. The
+            live hit rate is compared with the range the backtest predicts for that many signals. Below that range, the page
+            says &ldquo;Not working&rdquo;. Before 20 scored signals it says it&apos;s too early to tell.
+          </li>
+        </ul>
+      </Section>
+
       <Section id="limits" title="Limits of the data">
         <ul className="flex list-disc flex-col gap-xxs pl-sm">
           <li>
@@ -155,11 +177,14 @@ export default function MethodologyPage() {
             no service guarantee.
           </li>
           <li>
-            There is no order book data. Order-book imbalance and mid-price need level-2 quotes, which this source doesn&apos;t
-            provide, so those measures are shown as unavailable rather than estimated.
+            Order book data is top of book only: the best bid and ask, from Alpaca&apos;s free IEX feed when API keys are set.
+            IEX is one exchange, so its spread is usually wider than the whole market&apos;s. Mid-price, spread and imbalance
+            use those best prices only; deeper levels are not shown. Without keys these measures are shown as unavailable
+            rather than estimated.
           </li>
           <li>
-            Daily bars only. The forecast horizon is one trading day. Intraday patterns are not measured.
+            The analysis page uses daily bars, so its forecast horizon is one trading day. The Quant page also uses Yahoo&apos;s
+            1-minute bars (last 7 sessions, up to a minute late) and hourly bars (last 2 years).
           </li>
           <li>
             Z-scores use the plain mean and standard deviation. A few very large moves widen the spread, which makes

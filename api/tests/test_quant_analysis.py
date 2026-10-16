@@ -239,7 +239,6 @@ def test_analyze_end_to_end_on_momentum_series():
     assert split["shuffled"] is False and split["test_days"] == result["edge"]["n"]
     assert {w["scheme"] for w in result["validation"]["walk_forward"]} == {"expanding", "rolling"}
     assert all(w >= 0 for w in result["meta_weights"].values())
-    assert result["microstructure"]["available"] is False
     assert result["signal"]["regime"]["regime"] == "momentum"
     assert -1 < result["signal"]["strength"] < 1
     # A strong AR(1) process is predictable: the stack should beat most random strategies.

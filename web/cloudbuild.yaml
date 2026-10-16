@@ -1,0 +1,7 @@
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args: ["build", "--build-arg", "NEXT_PUBLIC_API_URL=${_API_URL}", "-t", "${_IMAGE}", "."]
+images: ["${_IMAGE}"]
+substitutions:
+  _IMAGE: us-central1-docker.pkg.dev/${PROJECT_ID}/billions/web:latest
+  _API_URL: ""

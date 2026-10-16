@@ -9,8 +9,10 @@ import { cn } from '@/lib/utils';
 import { CountUp, useReveal } from '@/components/motion';
 import { Direction } from '@/components/direction';
 import { Metric } from '@/components/analysis/metric';
+import { Microstructure, useQuote } from '@/components/analysis/microstructure';
 import { StrengthGauge } from '@/components/analysis/strength-gauge';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { PageHead } from '@/components/ui/page-head';
 import { Panel } from '@/components/ui/panel';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -96,6 +98,8 @@ function Insufficient({ data }: { data: AnalysisInsufficient }) {
 function FullAnalysis({ data }: { data: AnalysisOk }) {
   const { signal, validation } = data;
   const baseline = validation.random_baseline;
+  const quote = useQuote(data.ticker);
+  const spreadBps = quote.status === 'done' && quote.quote.available ? quote.quote.spread_bps : null;
   return (
     <>
       <SignalSummary data={data} />
@@ -143,11 +147,8 @@ function FullAnalysis({ data }: { data: AnalysisOk }) {
       </Panel>
 
       <div className="grid gap-md lg:grid-cols-2">
-        <CostCheck data={data} />
-        <Panel id="microstructure" label="Order book" title="Microstructure">
-          <p className="text-title-sm text-ink">Not available with current data source</p>
-          <p className="mt-xxs text-body-md">{data.microstructure.reason}</p>
-        </Panel>
+        <CostCheck data={data} spreadBps={spreadBps} />
+        <Microstructure state={quote} />
       </div>
 
       <Limits caveats={data.caveats} beatsRandom={baseline.beats_random} regimeSignificant={signal.regime.significant} />
@@ -343,7 +344,7 @@ function Validation({ data }: { data: AnalysisOk }) {
   );
 }
 
-function CostCheck({ data }: { data: AnalysisOk }) {
+function CostCheck({ data, spreadBps }: { data: AnalysisOk; spreadBps: number | null }) {
   const [cost, setCost] = useState(data.default_cost_bps);
   const inputId = useId();
   const cc = data.cost_check;
@@ -365,6 +366,14 @@ function CostCheck({ data }: { data: AnalysisOk }) {
           onChange={(e) => setCost(Math.max(0, Number(e.target.value)))}
           className="h-lg w-xxl rounded-sm border border-hairline bg-canvas px-xs text-body-md text-ink tabular"
         />
+        {spreadBps !== null && (
+          <p className="flex flex-wrap items-center gap-xxs text-body-sm">
+            Live spread is {spreadBps.toFixed(1)} bps. Crossing it once each way costs about the full spread.
+            <Button variant="text" onClick={() => setCost(Math.round(spreadBps * 10) / 10)}>
+              Use live spread
+            </Button>
+          </p>
+        )}
         <dl className="grid grid-cols-2 gap-xs pt-xs">
           <Metric label="Avg forecast move" value={`${cc.expected_move_bps.toFixed(1)} bps`} note="Per day, test period" />
           <Metric label="Next session" value={`${cc.latest_move_bps.toFixed(1)} bps`} note="Size of the latest forecast" />

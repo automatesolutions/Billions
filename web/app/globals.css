@@ -260,6 +260,71 @@
   }
 }
 
+/* Quant tracking: recording light, bar-clock sweep, tape entries, and the one-shot "engage" flash. */
+@utility rec-dot {
+  animation: rec-dot 1.6s ease-in-out infinite;
+}
+@keyframes rec-dot {
+  0%,
+  100% {
+    opacity: 1;
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-primary) 70%, transparent);
+  }
+  50% {
+    opacity: 0.35;
+    box-shadow: 0 0 0 6px transparent;
+  }
+}
+@utility track-sweep {
+  background-image: linear-gradient(90deg, transparent, color-mix(in srgb, var(--color-ink) 45%, transparent), transparent);
+  background-size: 40% 100%;
+  background-repeat: no-repeat;
+  animation: track-sweep 1.8s linear infinite;
+}
+@keyframes track-sweep {
+  from {
+    background-position: -40% 0;
+  }
+  to {
+    background-position: 140% 0;
+  }
+}
+@utility tape-in {
+  animation: tape-in 0.5s cubic-bezier(0.2, 0.8, 0.2, 1.2) both;
+}
+@keyframes tape-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.4);
+  }
+}
+@utility tape-wait {
+  animation: tape-wait 1.2s ease-in-out infinite;
+}
+@keyframes tape-wait {
+  50% {
+    border-color: var(--color-ink);
+    background-color: color-mix(in srgb, var(--color-ink) 12%, transparent);
+  }
+}
+@utility engage {
+  animation: engage 1.1s ease-out both;
+}
+@keyframes engage {
+  0% {
+    transform: scaleX(0);
+    opacity: 1;
+  }
+  60% {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scaleX(1);
+    opacity: 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;

@@ -1,5 +1,6 @@
 """
-BILLIONS API: read-only market intelligence. This service never places or simulates trades.
+BILLIONS API: read-only market intelligence. This service never places or routes trades.
+The Quant page records the positions its model would take, only to score them.
 """
 
 import logging
@@ -14,8 +15,9 @@ from slowapi.middleware import SlowAPIMiddleware
 from api.config import settings
 from api.database import init_db
 from api.limits import limiter
-from api.routers import analysis, outliers
+from api.routers import analysis, outliers, quant, quotes
 from api.services import outliers as outlier_service
+from api.services import quant as quant_service
 
 logging.basicConfig(level=logging.DEBUG if settings.DEBUG else logging.INFO)
 logger = logging.getLogger(__name__)
@@ -26,8 +28,11 @@ async def lifespan(app: FastAPI):
     init_db()
     if settings.OUTLIER_SCHEDULER:
         outlier_service.start_scheduler()
+    if settings.QUANT_SCHEDULER:
+        quant_service.start_scheduler()
     yield
     outlier_service.stop_scheduler()
+    quant_service.stop_scheduler()
 
 
 app = FastAPI(
@@ -60,12 +65,14 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS,
     allow_credentials=False,
-    allow_methods=["GET", "POST"],
+    allow_methods=["GET", "POST", "DELETE"],
     allow_headers=["Content-Type"],
 )
 
 app.include_router(outliers.router, prefix=settings.API_V1_PREFIX)
 app.include_router(analysis.router, prefix=settings.API_V1_PREFIX)
+app.include_router(quotes.router, prefix=settings.API_V1_PREFIX)
+app.include_router(quant.router, prefix=settings.API_V1_PREFIX)
 
 
 @app.get("/health")

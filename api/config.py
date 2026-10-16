@@ -31,6 +31,10 @@ class Settings(BaseSettings):
     OUTLIER_SCHEDULER: bool = True
     REFRESH_INTERVAL_MINUTES: int = 30
 
+    # Quant page: background recording of watched (ticker, interval) pairs, and how many can be watched.
+    QUANT_SCHEDULER: bool = True
+    QUANT_MAX_WATCHES: int = 20
+
     # Per-IP rate limits (slowapi syntax). Analysis is compute-heavy, so it gets a lower limit.
     RATE_LIMIT_ENABLED: bool = True
     RATE_LIMIT_DEFAULT: str = "120/minute"
@@ -38,6 +42,13 @@ class Settings(BaseSettings):
 
     # Optional. Only used if set; the outlier universe works without it.
     ALPHA_VANTAGE_API_KEY: str = ""
+
+    # Optional. Free Alpaca keys turn on live top-of-book quotes (microstructure panel).
+    # The free plan's "iex" feed is quotes from the IEX exchange only, not the whole market.
+    ALPACA_API_KEY: str = ""
+    ALPACA_SECRET_KEY: str = ""
+    ALPACA_DATA_URL: str = "https://data.alpaca.markets"
+    ALPACA_FEED: str = "iex"
 
     @field_validator("CORS_ORIGINS", mode="before")
     @classmethod

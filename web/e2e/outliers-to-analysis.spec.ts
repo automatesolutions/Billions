@@ -33,7 +33,8 @@ test('outliers list opens a stock analysis and back again', async ({ page, isMob
   for (const section of ['Signal', 'Price and forecast', 'Edge of the signal', 'Risk', 'Model comparison', 'Validation', 'Cost check', 'Microstructure']) {
     await expect(page.getByRole('heading', { level: 2, name: section, exact: true })).toBeVisible();
   }
-  await expect(page.getByText('Not available with current data source')).toBeVisible();
+  await expect(page.getByRole('meter', { name: 'Order-book imbalance' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Use live spread' })).toBeVisible();
   await expect(page.getByText(/No significant edge|Edge beats random/).first()).toBeVisible();
   await expect(page.getByRole('heading', { name: 'What this does not tell you' })).toBeVisible();
   await expect(page.getByText(DISCLAIMER)).toBeVisible();
@@ -60,4 +61,33 @@ test('strategy switcher changes the URL', async ({ page }) => {
 test('unknown ticker shows a clear message', async ({ page }) => {
   await page.goto('/analysis/NOPE');
   await expect(page.getByText('No prices for NOPE')).toBeVisible();
+});
+
+test('quant page: pick a stock and interval, see the action and the live record', async ({ page, isMobile }) => {
+  const ticker = isMobile ? 'MSFT' : 'NVDA'; // separate tracking state per project on the shared mock
+  await page.goto('/quant');
+  await expect(page).toHaveTitle('Quant · BILLIONS');
+  await expect(page.getByRole('heading', { level: 1, name: 'Is the strategy working?' })).toBeVisible();
+  await expect(page.getByRole('link', { name: /AAPL/ }).first()).toBeVisible(); // tracked list
+  await page.getByRole('textbox', { name: 'Stock' }).fill(ticker.toLowerCase());
+  await page.getByText('4 hours', { exact: true }).click();
+  await page.getByRole('button', { name: 'Show the strategy' }).click();
+
+  await expect(page).toHaveURL(new RegExp(`/quant/${ticker}\\?interval=4h$`));
+  await expect(page.getByRole('heading', { level: 1, name: ticker })).toBeVisible();
+  for (const section of ['What to do on the next bar', 'Is it working?', 'Backtest', 'How the signal is built']) {
+    await expect(page.getByRole('heading', { level: 2, name: section, exact: true })).toBeVisible();
+  }
+  await expect(page.getByRole('navigation', { name: 'Bar interval' }).getByRole('link', { name: /1 hour/ })).toBeVisible();
+  await expect(page.getByText('Checks before acting')).toBeVisible();
+  await expect(page.getByRole('img', { name: /^Order side: (buy|sell|hold)\./ })).toBeVisible();
+  await expect(page.locator('#action p').filter({ hasText: /^(Buy|Sell|Hold|Sell short|Buy to cover|Sell \+ short|Cover \+ buy)$/ })).toBeVisible(); // the headline, not the scale
+  await page.getByRole('button', { name: 'Track every bar' }).click();
+  await expect(page.getByRole('button', { name: 'Tracking · Stop' })).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByRole('heading', { name: new RegExp(`Tracking ${ticker} every 4-hour bar`) })).toBeVisible();
+  await expect(page.getByRole('progressbar', { name: /Time until the next/ })).toBeVisible();
+  await expect(page.getByRole('timer')).toContainText('Bar closes in');
+  await page.getByRole('button', { name: 'Tracking · Stop' }).click();
+  await expect(page.getByRole('button', { name: 'Track every bar' })).toBeVisible();
+  await expect(page.getByText(DISCLAIMER)).toBeVisible();
 });

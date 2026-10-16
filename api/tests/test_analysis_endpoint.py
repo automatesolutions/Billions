@@ -78,7 +78,7 @@ def test_full_analysis_payload(client, fake_prices):
     assert response.headers["cache-control"].startswith("public")
     data = response.json()
     assert data["status"] == "ok"
-    for key in ("signal", "forecast", "edge", "risk", "models", "validation", "cost_check", "microstructure", "caveats"):
+    for key in ("signal", "forecast", "edge", "risk", "models", "validation", "cost_check", "caveats"):
         assert key in data
     assert data["horizon_days"] == 1
     assert data["default_cost_bps"] == 10.0

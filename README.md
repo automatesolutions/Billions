@@ -19,6 +19,7 @@ Full analysis page: [docs/screenshots/analysis-desktop-full.png](docs/screenshot
 | `/` | Home page: a hero, the live board (top five swing outliers and scan stats), the three strategies, and a ticker lookup |
 | `/outliers/scalp`, `/outliers/swing`, `/outliers/longterm` | Every liquid NASDAQ stock on a scatter of two return windows, plus a ranked list of the ones more than 2 standard deviations from the group |
 | `/analysis/{TICKER}` | Signal, price and next-session forecast, out-of-sample edge, risk, model comparison, validation, cost check, and the limits of all of it |
+| `/quant`, `/quant/{TICKER}?interval=1m\|1h\|4h\|1d` | Pick a stock and a bar interval. Shows the action for the next bar (long, short or flat, with a tanh-sized position and the checks behind it), the live record of every past signal scored against what happened, the backtest after costs, and the worked calculation |
 | `/methodology` | How every number is made, in plain words |
 
 The header on every page has a ticker search, so you can open any NASDAQ stock's analysis from anywhere.
@@ -37,13 +38,21 @@ Each page has its own URL, title and link preview, and works with the browser's 
 - Headline numbers are out-of-sample. In-sample numbers are labeled as such.
 - Output is information only: direction, a bounded strength score, risk numbers and plain caveats. It never gives sizes, orders or buy/sell instructions.
 
+**Quant** runs the same pipeline at the interval you choose (1 minute, 1 hour, 4 hours or daily), following [`docs/quant_trading_comprehensive_guide.pdf`](docs/quant_trading_comprehensive_guide.pdf):
+
+- Intraday bars use a time-of-session feature in place of the weekday. The 1-minute strategy is flat overnight.
+- Position = tanh(forecast ÷ (0.1 × bar volatility)), as a share of your maximum. Every change in position pays half a round trip; the round trip is the live Alpaca spread when keys are set, otherwise 10 bps.
+- The action is flat unless every check passes: it beats 95% of random strategies, walk-forward expected value is positive, it is profitable after costs, the live record isn't failing, and the signal is strong enough.
+- **Is it working?** Every signal is saved when its bar closes and scored when the next one closes. The live hit rate and expected value are compared with the range the backtest predicts for that many signals. Below the range, the verdict is "Not working" and the action stays flat. "Track every bar" keeps recording in the background with no page open (up to `QUANT_MAX_WATCHES` pairs).
+- It places no orders. The sizes and actions are a model's output, for information.
+
 Details: [`/methodology`](web/app/methodology/page.tsx) and [`docs/REFACTOR_PLAN.md`](docs/REFACTOR_PLAN.md).
 
 ## Data source and its limits
 
 - Prices come from **Yahoo Finance** through `yfinance`, an unofficial library. Data can be delayed, missing or wrong, and there is no service guarantee.
-- **No order book (level 2).** Order-book imbalance and mid-price are shown as "Not available with current data source". They are never estimated.
-- **Daily bars only.** The forecast horizon is one trading day.
+- **Top of book only.** With free Alpaca keys (`ALPACA_API_KEY`, `ALPACA_SECRET_KEY`), the Microstructure panel shows the live best bid and ask from the IEX exchange: mid-price, spread and imbalance. IEX is one venue, so its spread is wider than the whole market's. There is no full depth (level 2). Without keys the panel says "Not available with current data source"; nothing is estimated.
+- **Daily bars on the analysis page.** Its forecast horizon is one trading day. The Quant page also uses Yahoo's 1-minute (last 7 sessions) and hourly (last 2 years) bars; 1-minute bars arrive up to a minute late.
 - Stocks with less than about a year of history get price and risk only, with a note that the models need more data.
 
 ## Run it locally
@@ -72,6 +81,9 @@ Backend (`.env` in the repo root; see [`.env.example`](.env.example)):
 | `REFRESH_INTERVAL_MINUTES` | `30` | Scan interval while the market is open |
 | `RATE_LIMIT_DEFAULT` / `RATE_LIMIT_ANALYSIS` | `120/minute` / `20/minute` | Per-IP limits |
 | `ALPHA_VANTAGE_API_KEY` | empty | Optional second source for the symbol list |
+| `ALPACA_API_KEY` / `ALPACA_SECRET_KEY` | empty | Optional. Live best bid/ask (Microstructure panel, Quant costs) |
+| `QUANT_SCHEDULER` | `true` | Record signals for tracked Quant pairs in the background |
+| `QUANT_MAX_WATCHES` | `20` | Most (ticker, interval) pairs that can be tracked |
 
 Frontend (`web/.env.local`; see [`web/.env.example`](web/.env.example)):
 

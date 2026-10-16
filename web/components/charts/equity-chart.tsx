@@ -12,7 +12,23 @@ const DD_HEIGHT = 96;
  * Out-of-sample growth of $1: following the stacked signal vs holding the stock,
  * with the signal's drawdown in a separate panel below (one y-axis per panel).
  */
-export function EquityChart({ dates, equity, hold, drawdown }: { dates: string[]; equity: number[]; hold: number[]; drawdown: number[] }) {
+export function EquityChart({
+  dates,
+  equity,
+  hold,
+  drawdown,
+  formatDate = dateET,
+  unit = 'test days',
+  signalLabel = 'Following the stacked signal',
+}: {
+  dates: string[];
+  equity: number[];
+  hold: number[];
+  drawdown: number[];
+  formatDate?: (iso: string) => string;
+  unit?: string;
+  signalLabel?: string;
+}) {
   const ref = useRef<HTMLDivElement>(null);
   const width = useElementWidth(ref);
   const [hover, setHover] = useState<number | null>(null);
@@ -56,7 +72,7 @@ export function EquityChart({ dates, equity, hold, drawdown }: { dates: string[]
               width={width}
               height={mainH}
               role="img"
-              aria-label={`Growth of one dollar over ${equity.length} test days: following the signal ended at ${equity.at(-1)?.toFixed(2)}, holding the stock ended at ${hold.at(-1)?.toFixed(2)}.`}
+              aria-label={`Growth of one dollar over ${equity.length} ${unit}: following the signal ended at ${equity.at(-1)?.toFixed(2)}, holding the stock ended at ${hold.at(-1)?.toFixed(2)}.`}
               onPointerMove={onMove}
               onPointerLeave={() => setHover(null)}
               className="block touch-pan-y"
@@ -73,10 +89,10 @@ export function EquityChart({ dates, equity, hold, drawdown }: { dates: string[]
                 <path d={pathFrom(hold.map((v, i) => [g.sx(i), g.sy(v)]))} className="fill-none stroke-body" strokeWidth={2} strokeLinejoin="round" />
                 <path d={pathFrom(equity.map((v, i) => [g.sx(i), g.sy(v)]))} className="fill-none stroke-ink" strokeWidth={2} strokeLinejoin="round" />
                 <text x={0} y={innerH + 20} className="fill-body text-caption">
-                  {dateET(dates[0])}
+                  {formatDate(dates[0])}
                 </text>
                 <text x={innerW} y={innerH + 20} textAnchor="end" className="fill-body text-caption">
-                  {dateET(dates[dates.length - 1])}
+                  {formatDate(dates[dates.length - 1])}
                 </text>
                 {hover !== null && (
                   <>
@@ -115,7 +131,7 @@ export function EquityChart({ dates, equity, hold, drawdown }: { dates: string[]
             className="pointer-events-none absolute top-0 border border-hairline bg-canvas px-xs py-xxs text-body-sm"
             style={{ left: Math.min(MARGIN.left + g.sx(hover) + 12, width - 200) }}
           >
-            <p className="text-body">{dateET(dates[hover])}</p>
+            <p className="text-body">{formatDate(dates[hover])}</p>
             <p className="tabular text-ink">Signal ${equity[hover].toFixed(3)}</p>
             <p className="tabular text-body">Holding ${hold[hover].toFixed(3)}</p>
             <p className="tabular text-body">Drawdown {pct(drawdown[hover] * 100)}</p>
@@ -124,7 +140,7 @@ export function EquityChart({ dates, equity, hold, drawdown }: { dates: string[]
       </div>
       <figcaption className="mt-xs flex flex-wrap gap-x-sm gap-y-xxs text-caption text-body">
         <span className="inline-flex items-center gap-xxs">
-          <span aria-hidden className="inline-block h-px w-xs bg-ink" /> Following the stacked signal
+          <span aria-hidden className="inline-block h-px w-xs bg-ink" /> {signalLabel}
         </span>
         <span className="inline-flex items-center gap-xxs">
           <span aria-hidden className="inline-block h-px w-xs bg-body" /> Holding the stock

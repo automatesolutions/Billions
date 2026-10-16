@@ -7,9 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased] - 2.0.0 "outliers only"
 
-BILLIONS is now a read-only outlier intelligence tool. It never places, routes or simulates trades.
+BILLIONS is a read-only market intelligence tool. It never places or routes trades. The Quant page records the positions its model would take, so they can be scored; it sends no orders.
 
 ### Added
+- **Quant page** (`/quant`, `GET /api/v1/quant/{ticker}?interval=1m|1h|4h|1d`): the stacked model at a chosen bar interval, following `docs/quant_trading_comprehensive_guide.pdf`. Shows the action for the next bar (tanh-sized, flat unless five checks pass), a step-by-step worked calculation with the live numbers, the backtest after costs, and **Is it working?**: every signal is recorded when its bar closes, scored when the next bar closes, and compared with the range the backtest predicts. `POST/DELETE /api/v1/quant/{ticker}/watch` keeps recording a pair in the background. New tables `quant_signals` and `quant_watch`.
+- **Live top-of-book quotes** (`GET /api/v1/quotes/{ticker}`): best bid and ask from Alpaca's free IEX feed when `ALPACA_API_KEY` and `ALPACA_SECRET_KEY` are set. The Microstructure panel shows mid-price, size-weighted mid, spread and order-book imbalance, refreshing every 15 s while the market is open; the cost check can use the live spread. Without keys the panel stays "Not available".
 - **Outliers page** (`/outliers/{scalp,swing,longterm}`): SVG scatter of every scanned stock, ranked outlier list with score, direction and a one-line reason, data-as-of time and NYSE market state, 5-minute auto-refresh.
 - **Stock analysis** (`/analysis/{ticker}`, `GET /api/v1/analysis/{ticker}`): log-return features with a leakage guard, AR(1) regime, XGBoost, online Passive-Aggressive and a stacked model with non-negative weights; 75/25 time split, expanding and rolling walk-forward, random baseline; EV, Sharpe, drawdown, risk context, editable cost check; microstructure marked unavailable.
 - **Methodology page**, 404, error and offline pages; PWA manifest, icons and offline service worker; Open Graph image and per-page metadata.
