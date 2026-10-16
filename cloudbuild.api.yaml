@@ -1,6 +1,11 @@
 steps:
   - name: gcr.io/cloud-builders/docker
-    args: ["build", "-f", "api/Dockerfile", "-t", "${_IMAGE}", "."]
-images: ["${_IMAGE}"]
-substitutions:
-  _IMAGE: us-central1-docker.pkg.dev/${PROJECT_ID}/billions/api:latest
+    args:
+      - build
+      - -f
+      - api/Dockerfile
+      - -t
+      - us-central1-docker.pkg.dev/$PROJECT_ID/billions/api:latest
+      - .
+images:
+  - us-central1-docker.pkg.dev/$PROJECT_ID/billions/api:latest
