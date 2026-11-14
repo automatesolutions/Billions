@@ -4,13 +4,19 @@ BILLIONS finds US stocks that are moving unusually far from the rest of the mark
 
 It's a market data web app with an optional paper trading bot. **Information only. Not financial advice. This tool never places real trades.** The bot trades an Alpaca paper account only, and it refuses to start with any other trading URL.
 
-![Swing outliers on desktop](docs/screenshots/outliers-desktop.png)
+![Swing outliers](docs/screenshots/outliers-swing.png)
+
+| Quant | Lead-lag research |
+|---|---|
+| ![Quant strategy picker](docs/screenshots/quant-picker.png) | ![Lead-lag research](docs/screenshots/lead-lag.png) |
+
+![Paper bot](docs/screenshots/bot.png)
 
 | Outliers (phone) | Stock analysis (phone) |
 |---|---|
 | ![Outliers on a phone](docs/screenshots/outliers-mobile.png) | ![Stock analysis on a phone](docs/screenshots/analysis-mobile.png) |
 
-Full analysis page: [docs/screenshots/analysis-desktop-full.png](docs/screenshots/analysis-desktop-full.png)
+Full analysis page: [docs/screenshots/analysis-desktop-full.png](docs/screenshots/analysis-desktop-full.png). Earlier desktop captures: [outliers](docs/screenshots/outliers-desktop.png), [analysis](docs/screenshots/analysis-desktop.png).
 
 ## Pages
 
