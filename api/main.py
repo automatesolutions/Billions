@@ -1,6 +1,9 @@
 """
-BILLIONS API: read-only market intelligence. This service never places or routes trades.
-The Quant page records the positions its model would take, only to score them.
+BILLIONS API: market intelligence, plus an optional paper trading bot.
+
+Nothing here places real trades. The Quant page records the positions its model
+would take, only to score them. The paper bot (off unless BOT_ENABLED=true) sends
+orders only to Alpaca's paper endpoint and refuses to start with any other URL.
 """
 
 import logging
@@ -15,9 +18,11 @@ from slowapi.middleware import SlowAPIMiddleware
 from api.config import settings
 from api.database import init_db
 from api.limits import limiter
-from api.routers import analysis, outliers, quant, quotes
+from api.routers import analysis, bot, lead_lag, outliers, quant, quotes
+from api.services import lead_lag_research
 from api.services import outliers as outlier_service
 from api.services import quant as quant_service
+from api.services.bot import runner as bot_runner
 
 logging.basicConfig(level=logging.DEBUG if settings.DEBUG else logging.INFO)
 logger = logging.getLogger(__name__)
@@ -30,14 +35,23 @@ async def lifespan(app: FastAPI):
         outlier_service.start_scheduler()
     if settings.QUANT_SCHEDULER:
         quant_service.start_scheduler()
+    if settings.LEAD_LAG_SCHEDULER:
+        lead_lag_research.start_scheduler()
+    if settings.BOT_ENABLED and not settings.BOT_ADMIN_TOKEN:
+        logger.warning("The paper bot is on with no BOT_ADMIN_TOKEN. Anyone who can reach this API can start it.")
     yield
     outlier_service.stop_scheduler()
     quant_service.stop_scheduler()
+    lead_lag_research.stop_scheduler()
+    bot_runner.runner.stop("The API shut down.")
 
 
 app = FastAPI(
     title=settings.APP_NAME,
-    description="Read-only outlier detection and per-stock quant analysis. Information only, not financial advice.",
+    description=(
+        "Outlier detection, per-stock quant analysis, lead-lag research, and an optional paper trading bot. "
+        "Information only, not financial advice."
+    ),
     version=settings.VERSION,
     lifespan=lifespan,
 )
@@ -66,13 +80,15 @@ app.add_middleware(
     allow_origins=settings.CORS_ORIGINS,
     allow_credentials=False,
     allow_methods=["GET", "POST", "DELETE"],
-    allow_headers=["Content-Type"],
+    allow_headers=["Content-Type", "X-Bot-Token"],
 )
 
 app.include_router(outliers.router, prefix=settings.API_V1_PREFIX)
 app.include_router(analysis.router, prefix=settings.API_V1_PREFIX)
 app.include_router(quotes.router, prefix=settings.API_V1_PREFIX)
 app.include_router(quant.router, prefix=settings.API_V1_PREFIX)
+app.include_router(bot.router, prefix=settings.API_V1_PREFIX)
+app.include_router(lead_lag.router, prefix=settings.API_V1_PREFIX)
 
 
 @app.get("/health")

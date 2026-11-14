@@ -44,6 +44,18 @@ export function dateTimeET(iso: string): string {
   return `${text} ET`;
 }
 
+/** Clock time with seconds, for trade logs: "10:04:31 AM ET". */
+export function timeSecondsET(iso: string): string {
+  const text = new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit', second: '2-digit', timeZone: ET }).format(new Date(iso));
+  return `${text} ET`;
+}
+
+/** Milliseconds as "850 ms" or "2.4 s". */
+export function duration(ms: number | null | undefined): string {
+  if (ms === null || ms === undefined || !Number.isFinite(ms)) return '—';
+  return Math.abs(ms) < 1000 ? `${Math.round(ms)} ms` : `${(ms / 1000).toFixed(1)} s`;
+}
+
 export function weekdayTimeET(iso: string): string {
   const text = new Intl.DateTimeFormat('en-US', { weekday: 'short', hour: 'numeric', minute: '2-digit', timeZone: ET }).format(
     new Date(iso),

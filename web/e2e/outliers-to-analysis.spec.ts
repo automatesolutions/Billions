@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-const DISCLAIMER = 'Information only. Not financial advice. This tool does not place trades.';
+const DISCLAIMER = 'Information only. Not financial advice. This tool never places real trades.';
 
 test('home shows the live board and leads to the outliers', async ({ page }) => {
   await page.goto('/');

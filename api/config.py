@@ -50,6 +50,37 @@ class Settings(BaseSettings):
     ALPACA_DATA_URL: str = "https://data.alpaca.markets"
     ALPACA_FEED: str = "iex"
 
+    # Paper trading bot. Orders only ever go to Alpaca's paper endpoint; the broker
+    # service refuses any other host, so changing this cannot turn on live trading.
+    ALPACA_TRADING_URL: str = "https://paper-api.alpaca.markets"
+
+    # Optional. Polygon.io market data for the bot and lead-lag research.
+    # The free plan allows 5 requests per minute and its data is delayed.
+    POLYGON_API_KEY: str = ""
+    POLYGON_URL: str = "https://api.polygon.io"
+    POLYGON_REQUESTS_PER_MINUTE: int = 5
+    # Set these only if your Polygon plan includes them. The free plan has neither.
+    POLYGON_SECOND_BARS: bool = False  # second-level aggregates for lead-lag research
+    POLYGON_REALTIME: bool = False  # real-time WebSocket trades for the lead-lag bot
+    POLYGON_WS_URL: str = "wss://socket.polygon.io/stocks"
+
+    # Alpaca's real-time stream. The free plan streams trades from the IEX exchange.
+    ALPACA_STREAM_URL: str = "wss://stream.data.alpaca.markets/v2"
+    ALPACA_DATA_REQUESTS_PER_MINUTE: int = 190  # free plan allows 200
+
+    # Paper bot. Off by default. When BOT_ADMIN_TOKEN is set, every bot endpoint needs it
+    # in an X-Bot-Token header. Set one whenever the API is reachable by anyone but you.
+    BOT_ENABLED: bool = False
+    BOT_ADMIN_TOKEN: str = ""
+    BOT_MAX_POSITION_DOLLARS: float = 1000.0
+    BOT_MAX_ORDERS_PER_DAY: int = 20
+
+    # Lead-lag research: daily rescan after the close, its data source, and history length.
+    LEAD_LAG_SCHEDULER: bool = True
+    LEAD_LAG_SOURCE: str = "polygon"  # polygon or alpaca
+    LEAD_LAG_DAYS: int = 60
+    LEAD_LAG_MAX_WATCHLIST: int = 50
+
     @field_validator("CORS_ORIGINS", mode="before")
     @classmethod
     def _split_origins(cls, value):

@@ -7,6 +7,8 @@ import { cn } from '@/lib/utils';
 const LINKS = [
   { href: '/outliers/swing', match: '/outliers', label: 'Outliers' },
   { href: '/quant', match: '/quant', label: 'Quant' },
+  { href: '/lead-lag', match: '/lead-lag', label: 'Lead-lag' },
+  { href: '/bot', match: '/bot', label: 'Bot' },
   { href: '/methodology', match: '/methodology', label: 'Methodology' },
 ];
 

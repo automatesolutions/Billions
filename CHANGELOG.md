@@ -5,7 +5,20 @@ All notable changes to BILLIONS will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] - 2.0.0 "outliers only"
+## [Unreleased] - paper bot and lead-lag research
+
+### Added
+- **Paper bot** (`/bot`, `/api/v1/bot/{info,strategies,status,start,stop,kill}`): runs a strategy against an Alpaca paper account only. `paper_broker.py` refuses any trading URL except `https://paper-api.alpaca.markets`, at start and before every request. Off unless `BOT_ENABLED=true`; `BOT_ADMIN_TOKEN` protects the endpoints with an `X-Bot-Token` header.
+- **Strategies:** a pluggable interface, a moving-average crossover on Polygon bars, and lead-lag on a real-time trade stream (Alpaca IEX by default, Polygon only with `POLYGON_REALTIME=true`). Lead-lag has take profit, stop loss, a time exit, a cooldown, and a timing log (leader move, signal, order, fill, slippage) for every trade.
+- **Risk limits:** dollars per position, orders per day (survives restarts), and a kill switch that blocks orders, stops the bot, cancels open orders, and optionally closes positions. Orders go out only while the market is open.
+- **Lead-lag research** (`/lead-lag`, `/api/v1/lead-lag/...`): cross-correlation lead and lag, accuracy with sample counts, 5, 20, and 60-day windows, an out-of-sample check, a binomial p-value, and a confidence label. Scans with a time estimate, a watchlist, suggested candidate pairs, and a daily rescan after the close (`LEAD_LAG_SCHEDULER`).
+- **Data clients:** `polygon.py` (5 requests a minute with a shared rate limiter and cache) and `alpaca_data.py` (historical minute bars).
+- New tables `bot_decisions`, `bot_trades`, `lead_lag_results`, and `lead_lag_watch`. New dependency `websockets`.
+
+### Changed
+- The disclaimer now reads "This tool never places real trades." CORS allows the `X-Bot-Token` header. API errors from validation (422) show their first message on the page.
+
+## 2.0.0 "outliers only"
 
 BILLIONS is a read-only market intelligence tool. It never places or routes trades. The Quant page records the positions its model would take, so they can be scored; it sends no orders.
 

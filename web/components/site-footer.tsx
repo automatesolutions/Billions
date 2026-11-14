@@ -3,7 +3,7 @@ import { STRATEGIES } from '@/types/api';
 import { STRATEGY_COPY } from '@/lib/strategies';
 import { Logo } from './logo';
 
-export const DISCLAIMER = 'Information only. Not financial advice. This tool does not place trades.';
+export const DISCLAIMER = 'Information only. Not financial advice. This tool never places real trades.';
 
 const COLUMNS = [
   {

@@ -844,7 +844,7 @@ function Limits({ caveats }: { caveats: string[] }) {
         <li>A backtest is one past path. Live results can be worse, and the record above is the honest test.</li>
         <li>Costs here are the quoted spread only. Slippage, fees and taxes are not included.</li>
         <li>
-          <Badge>Information only</Badge> This is a model&apos;s output, not advice. BILLIONS does not place trades.
+          <Badge>Information only</Badge> This is a model&apos;s output, not advice. BILLIONS never places real trades.
         </li>
       </ul>
     </section>

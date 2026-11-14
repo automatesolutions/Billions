@@ -615,4 +615,4 @@ Patterns shared by the strongest market-data and screener products: Finviz, Trad
 9. **Voice (`/my-tone`):** US English, sentence case in source text (CSS uppercases buttons and nav), "you" for the reader, no exclamation marks, contractions are fine. Banned: simply, just, easy, please, seamless, unlock, leverage (as a verb), robust, cutting-edge, empower, journey.
 10. **Empty, loading and error states** each say what happened and what to do next, in one or two short sentences.
 
-The disclaimer appears on every page, word for word: **"Information only. Not financial advice. This tool does not place trades."**
+The disclaimer appears on every page, word for word: **"Information only. Not financial advice. This tool never places real trades."**

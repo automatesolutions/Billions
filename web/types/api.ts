@@ -350,3 +350,243 @@ export interface QuantOk extends QuantBase {
 }
 
 export type QuantResponse = QuantOk | QuantInsufficient;
+
+// ---------------------------------------------------------------- paper bot
+
+export type BotStrategyName = 'ma_crossover' | 'lead_lag';
+
+export interface MACrossoverSettings {
+  tickers: string[];
+  short_window: number;
+  long_window: number;
+  timespan: 'day' | 'minute';
+  poll_seconds: number;
+}
+
+export interface LeadLagSettings {
+  leader: string;
+  followers: string[];
+  threshold_pct: number;
+  lookback_seconds: number;
+  max_wait_seconds: number;
+  follower_max_move_pct: number;
+  take_profit_pct: number;
+  stop_loss_pct: number;
+  cooldown_seconds: number;
+  stale_seconds: number;
+  allow_short: boolean;
+  source: 'alpaca' | 'polygon';
+}
+
+export interface RiskSettings {
+  max_position_dollars: number;
+  max_orders_per_day: number;
+}
+
+export interface BotStartRequest {
+  strategy: BotStrategyName;
+  ma_crossover?: MACrossoverSettings;
+  lead_lag?: LeadLagSettings;
+  risk: RiskSettings;
+}
+
+export interface BotInfo {
+  enabled: boolean;
+  token_required: boolean;
+  paper_url: string;
+  paper_url_ok: boolean;
+  alpaca_configured: boolean;
+  polygon_configured: boolean;
+  polygon_realtime: boolean;
+}
+
+export interface BotDecision {
+  id: number;
+  at: string;
+  strategy: string | null;
+  symbol: string | null;
+  action: string;
+  status: 'placed' | 'blocked' | 'skipped' | 'held' | 'failed' | 'info';
+  reason: string;
+  price: number | null;
+  qty: number | null;
+  order_id: string | null;
+  details: Record<string, unknown>;
+}
+
+export interface BotTradeTimings {
+  leader_to_signal_ms: number | null;
+  signal_to_submit_ms: number | null;
+  submit_to_fill_ms: number | null;
+  leader_to_fill_ms: number | null;
+  slippage_pct: number | null;
+}
+
+export interface BotTrade {
+  id: number;
+  leader: string;
+  follower: string;
+  side: 'buy' | 'sell';
+  qty: number;
+  status: string;
+  leader_move_pct: number;
+  leader_move_at: string | null;
+  leader_price: number;
+  follower_price_at_signal: number;
+  follower_move_pct: number;
+  signal_at: string | null;
+  entry_reason: string;
+  entry_filled_at: string | null;
+  entry_price: number | null;
+  exit_reason: string | null;
+  exit_filled_at: string | null;
+  exit_price: number | null;
+  pnl_pct: number | null;
+  timings: BotTradeTimings;
+}
+
+export interface BotAccount {
+  cash: number | null;
+  equity: number | null;
+  last_equity: number | null;
+  buying_power: number | null;
+  status: string | null;
+}
+
+export interface BotPosition {
+  symbol: string;
+  qty: number | null;
+  side: string | null;
+  avg_entry_price: number | null;
+  current_price: number | null;
+  market_value: number | null;
+  unrealized_pl: number | null;
+  unrealized_plpc: number | null;
+}
+
+export interface BotOrder {
+  id: string;
+  symbol: string;
+  side: string;
+  type: string | null;
+  qty: number | null;
+  filled_qty: number | null;
+  filled_avg_price: number | null;
+  status: string;
+  submitted_at: string | null;
+  filled_at: string | null;
+}
+
+export interface BotStatus {
+  enabled: boolean;
+  running: boolean;
+  strategy: BotStrategyName | null;
+  strategy_label: string | null;
+  config: BotStartRequest | null;
+  started_at: string | null;
+  stopped_at: string | null;
+  stopped_reason: string | null;
+  last_error: string | null;
+  market: MarketState;
+  risk: RiskSettings & { orders_today: number; killed: boolean; kill_reason: string | null };
+  stream: { source: string; connected: boolean; ticks?: number; last_error?: string | null } | null;
+  caveats: string[];
+  account: BotAccount | null;
+  positions: BotPosition[];
+  orders: BotOrder[];
+  broker_error: string | null;
+  decisions: BotDecision[];
+  trades: BotTrade[];
+  chart: BotChart[];
+}
+
+export interface BotChartBar {
+  t: string;
+  close: number | null;
+  short: number | null;
+  long: number | null;
+}
+
+/** One ticker's recent bars with both averages, every cross, and this run's orders (moving-average crossover only). */
+export interface BotChart {
+  symbol: string;
+  timespan: 'day' | 'minute';
+  short_window: number;
+  long_window: number;
+  bars: BotChartBar[];
+  crosses: { t: string; direction: 'up' | 'down'; price: number | null }[];
+  orders: { t: string | null; side: 'buy' | 'sell'; price: number | null; qty: number | null; at: string }[];
+  gap: number | null;
+}
+
+// ---------------------------------------------------------------- lead-lag research
+
+export type LeadLagConfidence = 'strong' | 'moderate' | 'weak' | 'not_enough_data';
+export type LeadLagSource = 'polygon' | 'alpaca';
+
+export interface AccuracyCount {
+  accuracy: number | null;
+  events: number;
+}
+
+export interface LeadLagResult {
+  status: 'ok' | 'not_enough_data';
+  message?: string;
+  pair_key: string;
+  leader: string;
+  follower: string;
+  source: LeadLagSource;
+  resolution: 'second' | 'minute';
+  bar_seconds: number;
+  days: number;
+  params: { threshold_pct: number; lookback_seconds: number; max_wait_seconds: number };
+  lag_seconds: number | null;
+  lead_strength: number | null;
+  accuracy: number | null;
+  events: number;
+  hits: number;
+  p_value: number | null;
+  in_sample: AccuracyCount & { days: number };
+  out_of_sample: AccuracyCount & { days: number; direction_held: boolean | null };
+  avg_follower_move_pct: number | null;
+  avg_lag_seconds: number | null;
+  windows: Record<'5' | '20' | '60', AccuracyCount>;
+  confidence: LeadLagConfidence;
+  run_date?: string;
+  last_updated?: string;
+  details?: {
+    xcorr: { lag_seconds: number; corr: number | null }[];
+    event_path: { offset_seconds: number; leader_pct: number; follower_pct: number }[];
+    lag_histogram: { lag_seconds: number; count: number }[];
+    daily: { day: string; accuracy: number | null; events: number }[];
+  };
+}
+
+export interface LeadLagPair {
+  a: string;
+  b: string;
+  group?: string;
+  why?: string;
+}
+
+export interface ScanEstimate {
+  pairs: number;
+  tickers: number;
+  requests: number;
+  cached_tickers: number;
+  seconds: number;
+  source: LeadLagSource;
+  resolution: 'second' | 'minute';
+}
+
+export interface ScanStatus {
+  id: string;
+  state: 'running' | 'done' | 'failed';
+  trigger: 'manual' | 'daily';
+  started_at: string;
+  finished_at: string | null;
+  total_pairs: number;
+  done_pairs: number;
+  errors: string[];
+  estimate: ScanEstimate;
+}

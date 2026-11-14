@@ -7,6 +7,8 @@ import os
 os.environ.setdefault("DATABASE_URL", "sqlite:///:memory:")
 os.environ.setdefault("OUTLIER_SCHEDULER", "false")
 os.environ.setdefault("QUANT_SCHEDULER", "false")
+os.environ.setdefault("LEAD_LAG_SCHEDULER", "false")
+os.environ.setdefault("BOT_ENABLED", "false")
 os.environ.setdefault("RATE_LIMIT_ENABLED", "false")
 
 import pytest  # noqa: E402
